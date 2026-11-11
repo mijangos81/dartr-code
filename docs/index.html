@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dartr-code: dartRverse code your assistant has checked</title>
+<meta name="description" content="A skill that gives Claude, Codex and ChatGPT the exact signature of every dartRverse function and the known calls that run without an error and return a wrong result.">
+<meta property="og:title" content="dartr-code">
+<meta property="og:description" content="It ran without an error. It was still wrong. A skill that makes AI assistants check dartRverse code before they write it.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #FAFBF9;
+    --card: #FFFFFF;
+    --ink: #1E2A24;
+    --muted: #55645B;
+    --accent: #1F7A4D;
+    --accent-ink: #16603B;
+    --accent-soft: #E3F0E8;
+    --trap: #8A560C;
+    --trap-line: #C98A1E;
+    --trap-soft: #FAF1DF;
+    --line: #D5E0D8;
+    --code-bg: #EFF4F0;
+    --empty: #DCE5DF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1512;
+      --card: #151D19;
+      --ink: #E6EEE9;
+      --muted: #9DB0A5;
+      --accent: #5CC08B;
+      --accent-ink: #7AD3A2;
+      --accent-soft: #16291F;
+      --trap: #E7B45C;
+      --trap-line: #C98A1E;
+      --trap-soft: #2A2112;
+      --line: #26332C;
+      --code-bg: #111915;
+      --empty: #26332C;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 18px;
+    line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3 {
+    font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif;
+    line-height: 1.08;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: clamp(2.5rem, 5.4vw, 4.1rem); font-weight: 700; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
+  p { margin: 0; }
+  a { color: var(--accent-ink); text-underline-offset: 0.15em; }
+  code, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; }
+  code {
+    font-size: 0.86em;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.05em 0.32em;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* section label written the way R users mark sections in a script */
+  .rule {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0 0 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+  }
+  .rule::after { content: ""; flex: 1; border-top: 1px dashed var(--muted); opacity: 0.55; }
+
+  header.top { padding: 22px 0; }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1rem; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
+  .brand svg { width: 20px; height: 22px; flex: none; }
+  .top nav { display: flex; gap: 22px; font-size: 0.92rem; }
+  .top nav a { color: var(--muted); text-decoration: none; }
+  .top nav a:hover { color: var(--accent-ink); text-decoration: underline; }
+
+  .hero { padding: 40px 0 76px; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; }
+  .hero h1 span { display: block; }
+  .hero h1 .still { color: var(--trap); }
+  .lede { font-size: 1.14rem; color: var(--muted); margin-top: 24px; max-width: 34em; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .btn {
+    display: inline-block; text-decoration: none; font-weight: 600; font-size: 0.98rem;
+    padding: 12px 20px; border-radius: 10px; border: 1.5px solid var(--accent);
+  }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .btn.ghost { color: var(--accent-ink); background: transparent; }
+  .btn.ghost:hover { background: var(--accent-soft); }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #0F1512; } }
+  .works { margin-top: 26px; font-size: 0.88rem; color: var(--muted); }
+
+  /* the specimen: a call, what R reported, what happened, what the skill says */
+  .specimen { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: 0 1px 0 var(--line); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tabs button {
+    font: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+  }
+  .tabs button:hover { color: var(--ink); border-color: var(--muted); }
+  .tabs button[aria-selected="true"] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+  .panel + .panel { margin-top: 26px; }
+  .js .panel + .panel { margin-top: 0; }
+  .panel[hidden] { display: none; }
+  pre .o { color: var(--muted); }
+  pre .t { text-decoration: underline wavy var(--trap-line); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+  .specimen pre { line-height: 1.85; }
+  .note { display: grid; grid-template-columns: 8.2rem minmax(0, 1fr); gap: 4px 14px; padding: 11px 14px; margin-top: 8px; border-radius: 10px; border-left: 3px solid var(--line); font-size: 0.93rem; line-height: 1.5; }
+  .note .k { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); padding-top: 0.2em; }
+  .note.said { background: var(--code-bg); }
+  .note.trap { background: var(--trap-soft); border-left-color: var(--trap-line); }
+  .note.trap .k { color: var(--trap); }
+  .note.fix { background: var(--accent-soft); border-left-color: var(--accent); }
+  .note.fix .k { color: var(--accent-ink); }
+  .note code { background: transparent; border-color: transparent; padding: 0; font-size: 0.84em; }
+  .measured { margin-top: 14px; font-size: 0.8rem; color: var(--muted); }
+
+  section.band { padding: 68px 0; border-top: 1px solid var(--line); }
+  .intro { color: var(--muted); max-width: 40em; margin-top: 14px; font-size: 1.05rem; }
+
+  .gets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; margin-top: 38px; }
+  .gets p { margin-top: 10px; color: var(--muted); font-size: 0.98rem; }
+  .gets h3 { padding-top: 16px; border-top: 3px solid var(--accent); }
+
+  .install { margin-top: 30px; max-width: 760px; }
+  .install .panel p { margin-top: 14px; color: var(--muted); font-size: 0.98rem; }
+  .codebox { position: relative; }
+  .copy {
+    position: absolute; top: 8px; right: 8px;
+    font: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 7px; padding: 4px 10px;
+  }
+  .copy:hover { color: var(--ink); border-color: var(--muted); }
+  .needs { margin-top: 26px; max-width: 760px; color: var(--muted); font-size: 0.95rem; }
+
+  .evidence { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; margin-top: 34px; align-items: start; }
+  .tally + .tally { margin-top: 22px; }
+  .tally .label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.95rem; margin-bottom: 8px; }
+  .tally .label b { font-weight: 600; }
+  .tally .label span { color: var(--muted); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.86rem; }
+  .cells { display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 5px; }
+  .cells i { display: block; aspect-ratio: 1; border-radius: 3px; background: var(--empty); }
+  .cells.with i.p { background: var(--accent); }
+  .cells.without i.p { background: var(--muted); }
+  .caveat p { color: var(--muted); font-size: 0.98rem; }
+  .caveat p + p { margin-top: 12px; }
+
+  .tree { margin-top: 30px; max-width: 920px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; }
+  .tree div { display: grid; grid-template-columns: 21.5rem minmax(0, 1fr); gap: 16px; padding: 13px 18px; font-size: 0.95rem; }
+  .tree div + div { border-top: 1px solid var(--line); }
+  .tree .path { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.84rem; padding-top: 0.15em; overflow-wrap: anywhere; }
+  .tree .what { color: var(--muted); }
+
+  footer { border-top: 1px solid var(--line); padding: 44px 0 64px; font-size: 0.93rem; color: var(--muted); }
+  footer .wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; }
+  footer h3 { font-size: 1rem; color: var(--ink); margin-bottom: 8px; }
+
+  @media (max-width: 900px) {
+    .hero { padding: 20px 0 56px; }
+    .hero .wrap, .evidence { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .gets, footer .wrap { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    section.band { padding: 52px 0; }
+  }
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .wrap { padding: 0 16px; }
+    .top nav a.hide-s { display: none; }
+    .specimen { padding: 13px; }
+    .note { grid-template-columns: minmax(0, 1fr); }
+    .tree div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="dartr-code, top of page">
+      <svg viewBox="0 0 20 22" aria-hidden="true"><path d="M10 1 19 6v10l-9 5-9-5V6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6.2 8.2h7.6M6.2 11h7.6M6.2 13.8h4.4" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      dartr-code
+    </a>
+    <nav aria-label="Page">
+      <a class="hide-s" href="#gets">What it gives</a>
+      <a href="#install">Install</a>
+      <a class="hide-s" href="#evidence">Evidence</a>
+      <a href="https://github.com/mijangos81/dartr-code">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1><span>It ran without an&nbsp;error.</span><span class="still">It was still wrong.</span></h1>
+      <p class="lede">An AI assistant writes dartRverse code from memory. It misremembers argument names, and it writes calls that run and return the wrong result. <strong>dartr-code</strong> is a skill that gives the assistant the exact signature of all 263 functions and the list of known traps, so that it can check each call before it writes it.</p>
+      <div class="actions">
+        <a class="btn primary" href="#install">Install the skill</a>
+        <a class="btn ghost" href="https://github.com/mijangos81/dartr-code">Source on GitHub</a>
+      </div>
+      <p class="works">For Claude Code, Codex and the ChatGPT desktop app.</p>
+    </div>
+
+    <div class="specimen" id="specimen">
+      <p class="rule"># ---- four calls an assistant wrote ----</p>
+      <div class="tabs" role="tablist" aria-label="Examples">
+        <button role="tab" id="t-read" aria-controls="p-read" aria-selected="true">Samples dropped</button>
+        <button role="tab" id="t-labels" aria-controls="p-labels" aria-selected="false" tabindex="-1">Labels shifted</button>
+        <button role="tab" id="t-stale" aria-controls="p-stale" aria-selected="false" tabindex="-1">Stale loci</button>
+        <button role="tab" id="t-name" aria-controls="p-name" aria-selected="false" tabindex="-1">Invented argument</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-read" aria-labelledby="t-read">
+<pre><code>x &lt;- gl.read.dart("Report_SNP.csv",
+                  <span class="t">ind.metafile = "samples.csv"</span>,
+                  verbose = 0)
+nInd(x)
+<span class="o">#&gt; [1] 240</span></code></pre>
+        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>The report holds 250 samples. Ten had no row in <code>samples.csv</code> and were left out. At the default verbosity one line in a long log says so; with <code>verbose = 0</code> nothing does.</span></div>
+        <div class="note fix"><span class="k">The skill says</span><span>Give every sample a row, then compare <code>nInd(x)</code> with the number of samples you sent.</span></div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-labels" aria-labelledby="t-labels">
+<pre><code>keep &lt;- read.csv("keep.csv")        <span class="o"># columns: id, new_group</span>
+x &lt;- gl.keep.ind(platypus.gl, ind.list = keep$id)
+<span class="t">pop(x) &lt;- keep$new_group</span>
+gl.fst.pop(x)
+<span class="o"># pairwise FST came out as 0.004, -0.011 and -0.017</span></code></pre>
+        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span><code>gl.keep.ind()</code> returns individuals in the object's order, not the order of the list. 21 of the 30 animals received another animal's group, and FST values of 0.052 to 0.081 came out as zero.</span></div>
+        <div class="note fix"><span class="k">The skill says</span><span>Assign by name: <code>pop(x) &lt;- keep$new_group[match(indNames(x), keep$id)]</code></span></div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-stale" aria-labelledby="t-stale">
+<pre><code>x &lt;- <span class="t">gl.keep.pop(platypus.gl, pop.list = "TENTERFIELD")</span>
+nLoc(x)
+<span class="o">#&gt; [1] 1000</span></code></pre>
+        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>425 of those 1,000 loci are monomorphic or entirely missing in the 41 animals kept, and <code>loc.metrics$CallRate</code> still describes all 81.</span></div>
+        <div class="note fix"><span class="k">The skill says</span><span>Add <code>recalc = TRUE, mono.rm = TRUE</code>. That leaves 575 loci with their statistics recalculated.</span></div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-name" aria-labelledby="t-name">
+<pre><code>pc &lt;- gl.pcoa(x, <span class="t">plot.display = FALSE</span>)
+<span class="o">#&gt; Error in gl.pcoa(x, plot.display = FALSE) :
+#&gt;   unused argument (plot.display = FALSE)</span></code></pre>
+        <div class="note said"><span class="k">R reported</span><span>An error that does not say what the argument should have been.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>Most dartR functions take <code>plot.display</code>. <code>gl.pcoa()</code> takes <code>plot.out</code>. The assistant wrote the name it remembered from the others.</span></div>
+        <div class="note fix"><span class="k">The skill says</span><span>Look the signature up before calling: <code>gl.pcoa(x, plot.out = FALSE)</code></span></div>
+      </div>
+
+      <p class="measured">Each result was measured on dartR.base 1.2.6 with the example data that ships in dartR.data.</p>
+    </div>
+  </div>
+</div>
+
+<section class="band" id="gets">
+  <div class="wrap">
+    <p class="rule"># ---- what the assistant gets ----</p>
+    <h2>Three things it does not have from memory</h2>
+    <div class="gets">
+      <div>
+        <h3>The exact signature</h3>
+        <p>A small R script reads the signature, the arguments and the return value of any function from the packages installed on your computer, so the answer fits your version. Where R cannot be run, the same reference ships as plain files.</p>
+      </div>
+      <div>
+        <h3>The known traps</h3>
+        <p>Calls that run and mislead, grouped by topic: reading data, filtering, FST and heterozygosity, relatedness, file-backed objects, external programs. Each one states its evidence: tested, read in the source, or reported by the developers.</p>
+      </div>
+      <div>
+        <h3>The version you are on</h3>
+        <p>The CRAN releases and the development branches differ. The skill lists the functions that give a wrong result on CRAN and are corrected in development, and tells the assistant to ask which version you have.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="install">
+  <div class="wrap">
+    <p class="rule"># ---- install ----</p>
+    <h2>Install it for your assistant</h2>
+    <p class="intro">One folder serves all three. Copy it to the place your assistant reads skills from.</p>
+
+    <div class="install">
+      <div class="tabs" role="tablist" aria-label="Assistant">
+        <button role="tab" id="i-claude" aria-controls="q-claude" aria-selected="true">Claude Code</button>
+        <button role="tab" id="i-codex" aria-controls="q-codex" aria-selected="false" tabindex="-1">Codex</button>
+        <button role="tab" id="i-chatgpt" aria-controls="q-chatgpt" aria-selected="false" tabindex="-1">ChatGPT desktop</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="q-claude" aria-labelledby="i-claude">
+        <div class="codebox">
+<pre><code>git clone https://github.com/mijangos81/dartr-code.git
+mkdir -p ~/.claude/skills
+cp -r dartr-code/skills/dartr-code ~/.claude/skills/</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p>Then ask for dartR code as usual. Claude loads the skill when the request calls for it. To use it in one project only, copy the folder into <code>.claude/skills/</code> inside that project.</p>
+      </div>
+
+      <div class="panel" role="tabpanel" id="q-codex" aria-labelledby="i-codex">
+        <div class="codebox">
+<pre><code>git clone https://github.com/mijangos81/dartr-code.git
+mkdir -p ~/.agents/skills
+cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p>Codex loads the skill when the request calls for it. Type <code>$dartr-code</code> in a prompt to call it by name.</p>
+      </div>
+
+      <div class="panel" role="tabpanel" id="q-chatgpt" aria-labelledby="i-chatgpt">
+        <div class="codebox">
+<pre><code>git clone https://github.com/mijangos81/dartr-code.git</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p>The repository is also a plugin. Install the cloned folder as a local plugin by following <a href="https://developers.openai.com/plugins/build/plugins">OpenAI's instructions</a>, section &ldquo;Install a local plugin manually&rdquo;.</p>
+        <p>ChatGPT in the browser cannot install a plugin from a folder or a zip file. It takes plugins from its directory, where this one is not listed.</p>
+      </div>
+    </div>
+
+    <p class="needs">On Windows, copy the folder <code>skills\dartr-code</code> by hand into the same place under your user folder. For the lookup script the assistant has to be able to run <code>Rscript</code> from an R that holds the dartRverse; without that it reads the plain reference files.</p>
+  </div>
+</section>
+
+<section class="band" id="evidence">
+  <div class="wrap">
+    <p class="rule"># ---- evidence ----</p>
+    <h2>One test so far, and its limits</h2>
+    <div class="evidence">
+      <div>
+        <div class="tally">
+          <div class="label"><b>With the skill</b><span>31 of 34 checks</span></div>
+          <div class="cells with" data-pass="31" role="img" aria-label="31 of 34 checks passed with the skill"></div>
+        </div>
+        <div class="tally">
+          <div class="label"><b>Without it</b><span>13 of 34 checks</span></div>
+          <div class="cells without" data-pass="13" role="img" aria-label="13 of 34 checks passed without the skill"></div>
+        </div>
+      </div>
+      <div class="caveat">
+        <p>Six analysis tasks were given to an assistant (Claude) that could not run R, once with the skill and once without. Its scripts were then run in a fresh R session and their output files checked against answer keys.</p>
+        <p>One run per task is too few to say how much of the difference is chance. The test used version 0.3.0 and has not been repeated since, and no task has yet been run with the skill in Codex or ChatGPT. The <a href="https://github.com/mijangos81/dartr-code/tree/main/evals">six tasks</a> are in the repository.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="inside">
+  <div class="wrap">
+    <p class="rule"># ---- inside the repository ----</p>
+    <h2>What you are installing</h2>
+    <div class="tree">
+      <div><span class="path">skills/dartr-code/SKILL.md</span><span class="what">What the assistant reads first: how to look a function up, the order of work, and the ten most common traps.</span></div>
+      <div><span class="path">skills/dartr-code/scripts/dartr_ref.R</span><span class="what">Looks functions up in the dartR packages installed on your computer.</span></div>
+      <div><span class="path">skills/dartr-code/references/</span><span class="what">Twenty files: every function, the full list of traps, what changed from the old <code>dartR</code> package, and a map of the ebook and workshop tutorials.</span></div>
+      <div><span class="path">plugin.json</span><span class="what">Packaging for Codex and the ChatGPT desktop app.</span></div>
+      <div><span class="path">evals/</span><span class="what">The six test tasks and their input files.</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <h3>Found a wrong signature or a missing trap?</h3>
+      <p><a href="https://github.com/mijangos81/dartr-code/issues">Open an issue</a>, or post to the <a href="https://groups.google.com/g/dartr">dartR Google Group</a>.</p>
+    </div>
+    <div>
+      <h3>The packages</h3>
+      <p>dartr-code describes the <a href="https://github.com/green-striped-gecko/dartRverse">dartRverse</a>: dartR.base, dartR.popgen, dartR.spatial, dartR.captive, dartR.sexlinked and dartR.sim.</p>
+    </div>
+    <div>
+      <h3>Licence</h3>
+      <p>GPL-3. The function descriptions come from the help pages of the dartRverse packages. <a href="https://github.com/mijangos81/dartr-code/blob/main/NEWS.md">What changed in each version</a>.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  document.documentElement.classList.add("js");
+
+  // tabs: the two tab lists on the page share this code
+  document.querySelectorAll('[role="tablist"]').forEach(function (list) {
+    var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(t, false); });
+      t.addEventListener("keydown", function (e) {
+        var j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : null;
+        if (j === null) return;
+        e.preventDefault();
+        select(tabs[(j + tabs.length) % tabs.length], true);
+      });
+    });
+    select(tabs[0], false);
+  });
+
+  // copy buttons
+  document.querySelectorAll(".copy").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var text = b.parentNode.querySelector("pre").innerText;
+      var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () {});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (err) {}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  // one square per check: 34 checks, the passed ones filled
+  document.querySelectorAll(".cells").forEach(function (c) {
+    var pass = parseInt(c.getAttribute("data-pass"), 10);
+    for (var k = 0; k < 34; k++) {
+      var s = document.createElement("i");
+      if (k < pass) s.className = "p";
+      c.appendChild(s);
+    }
+  });
+})();
+</script>
+</body>
+</html>
