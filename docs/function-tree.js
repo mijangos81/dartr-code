@@ -272,7 +272,7 @@
     var layer = svg.append("g");
     var linkLayer = layer.append("g");
     var nodeLayer = layer.append("g");
-    var rootN = { kind: "root", name: "dartRverse", r: 46, x: 0, y: 0, fx: 0, fy: 0 };
+    var rootN = { kind: "root", name: "dartRverse", r: 72, x: 0, y: 0, fx: 0, fy: 0 };
     var nodes = [rootN].concat(stages, groups), links = [];
 
     function wrap(label) {
@@ -382,8 +382,12 @@
       var a = (-90 + 60 * k) * Math.PI / 180;
       return (rootN.r * Math.cos(a)).toFixed(1) + "," + (rootN.r * Math.sin(a)).toFixed(1);
     });
-    rootSel.append("path").attr("d", "M" + hex.join("L") + "Z");
-    rootSel.append("text").attr("dy", "0.35em").text("dartRverse");
+    // the dartR logo: a hexagon standing on a point, so its width is sqrt(3)/2 of its height
+    var logoH = rootN.r * 2, logoW = logoH * Math.sqrt(3) / 2;
+    rootSel.append("image").attr("href", "dartR-logo.png")
+      .attr("x", -logoW / 2).attr("y", -logoH / 2).attr("width", logoW).attr("height", logoH);
+    rootSel.append("path").attr("d", "M" + hex.join("L") + "Z");   // not painted; carries the focus ring
+    rootSel.append("title").text("dartRverse: show the whole tree");
     press(rootSel, function () { fit(null); });
 
     var stageSel = nodeLayer.selectAll("g.stage").data(stages).join("g").attr("class", "stage")

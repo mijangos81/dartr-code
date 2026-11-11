@@ -25,7 +25,6 @@
     --trap-soft: #FAF1DF;
     --line: #D5E0D8;
     --code-bg: #EFF4F0;
-    --empty: #DCE5DF;
     /* one colour per package in the function tree; checked for colour-blind separation */
     --pk-base: #7C8A82;
     --pk-popgen: #2288F8;
@@ -49,7 +48,6 @@
       --trap-soft: #2A2112;
       --line: #26332C;
       --code-bg: #111915;
-      --empty: #26332C;
       --pk-base: #8C9B93;
       --pk-popgen: #268BFC;
       --pk-spatial: #34A72B;
@@ -128,7 +126,7 @@
   .hero { padding: 40px 0 76px; }
   .hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; }
   .hero h1 span { display: block; }
-  .hero h1 .still { color: var(--trap); }
+  .hero h1 .tone { color: var(--accent-ink); }
   .lede { font-size: 1.14rem; color: var(--muted); margin-top: 24px; max-width: 34em; }
   .lede strong { color: var(--ink); font-weight: 600; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
@@ -187,17 +185,6 @@
   .copy:hover { color: var(--ink); border-color: var(--muted); }
   .needs { margin-top: 26px; max-width: 760px; color: var(--muted); font-size: 0.95rem; }
 
-  .evidence { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; margin-top: 34px; align-items: start; }
-  .tally + .tally { margin-top: 22px; }
-  .tally .label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.95rem; margin-bottom: 8px; }
-  .tally .label b { font-weight: 600; }
-  .tally .label span { color: var(--muted); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.86rem; }
-  .cells { display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 5px; }
-  .cells i { display: block; aspect-ratio: 1; border-radius: 3px; background: var(--empty); }
-  .cells.with i.p { background: var(--accent); }
-  .cells.without i.p { background: var(--muted); }
-  .caveat p { color: var(--muted); font-size: 0.98rem; }
-  .caveat p + p { margin-top: 12px; }
 
   .tree { margin-top: 30px; max-width: 920px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden; }
   .tree div { display: grid; grid-template-columns: 21.5rem minmax(0, 1fr); gap: 16px; padding: 13px 18px; font-size: 0.95rem; }
@@ -254,8 +241,7 @@
   .sk-link { stroke: var(--muted); stroke-opacity: 0.4; stroke-width: 1.5; }
   .leaf-link { fill: none; stroke: var(--muted); stroke-opacity: 0.4; stroke-width: 1; }
   .rootn, .stage, .hub, .leaf { cursor: pointer; }
-  .rootn path { fill: var(--ink); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; }
-  .rootn text { fill: var(--bg); font: 600 12.5px "IBM Plex Mono", ui-monospace, monospace; text-anchor: middle; }
+  .rootn path { fill: transparent; stroke-linejoin: round; }
   .stage circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
   .stage text { fill: var(--accent-ink); font: 700 14px "Bricolage Grotesque", "IBM Plex Sans", sans-serif; text-anchor: middle; }
   .hub .core { fill: var(--card); }
@@ -325,7 +311,7 @@
 
   @media (max-width: 900px) {
     .hero { padding: 20px 0 56px; }
-    .hero .wrap, .evidence { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; }
     .gets, footer .wrap { grid-template-columns: minmax(0, 1fr); gap: 26px; }
     section.band { padding: 52px 0; }
     .fstage { height: 520px; border-radius: 0; }
@@ -356,7 +342,6 @@
       <a class="hide-s" href="#gets">How it helps</a>
       <a class="hide-s" href="#functions">Functions</a>
       <a href="#install">Install</a>
-      <a class="hide-s" href="#evidence">Evidence</a>
       <a href="https://github.com/mijangos81/dartr-code">GitHub</a>
     </nav>
   </div>
@@ -367,8 +352,8 @@
 <div class="hero">
   <div class="wrap">
     <div>
-      <h1><span>It ran without an&nbsp;error.</span><span class="still">It was still wrong.</span></h1>
-      <p class="lede">AI assistants sometimes confuse dartRverse argument names or write code that runs but gives the wrong result. <strong>dartr-code</strong> is a set of instructions and reference files covering all 263 functions and known pitfalls. Your assistant can check each call against these references before writing your code.</p>
+      <h1><span>A dartRverse reference</span><span class="tone">for your AI&nbsp;assistant.</span></h1>
+      <p class="lede"><strong>dartr-code</strong> gives your AI assistant a reference for the dartRverse, the R packages for population-genetic analysis of SNP data. It is a set of instructions and reference files covering all 263 functions and known pitfalls. Your assistant can check each call against it before writing your code.</p>
       <div class="actions">
         <a class="btn primary" href="#install">Install the skill</a>
         <a class="btn ghost" href="https://github.com/mijangos81/dartr-code">Source on GitHub</a>
@@ -377,7 +362,7 @@
     </div>
 
     <div class="specimen" id="specimen">
-      <p class="rule"># ---- four calls an assistant wrote ----</p>
+      <p class="rule"># ---- four pitfalls it covers ----</p>
       <div class="tabs" role="tablist" aria-label="Examples">
         <button role="tab" id="t-read" aria-controls="p-read" aria-selected="true">Samples dropped</button>
         <button role="tab" id="t-labels" aria-controls="p-labels" aria-selected="false" tabindex="-1">Labels shifted</button>
@@ -538,29 +523,6 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
   </div>
 </section>
 
-<section class="band" id="evidence">
-  <div class="wrap">
-    <p class="rule"># ---- evidence ----</p>
-    <h2>What the first test showed</h2>
-    <div class="evidence">
-      <div>
-        <div class="tally">
-          <div class="label"><b>With the skill</b><span>31 of 34 checks</span></div>
-          <div class="cells with" data-pass="31" role="img" aria-label="31 of 34 checks passed with the skill"></div>
-        </div>
-        <div class="tally">
-          <div class="label"><b>Without it</b><span>13 of 34 checks</span></div>
-          <div class="cells without" data-pass="13" role="img" aria-label="13 of 34 checks passed without the skill"></div>
-        </div>
-      </div>
-      <div class="caveat">
-        <p>Claude completed six analysis tasks, each once with the skill and once without it. It could not run R during those tasks. The scripts were then run in a fresh R session, and their output files were checked against answer keys.</p>
-        <p>One run per task is too few to say how much of the difference is due to chance. The test used version 0.3.0 and hasn't been repeated for later versions. No task has yet been run with the skill in Codex or ChatGPT. You can find the <a href="https://github.com/mijangos81/dartr-code/tree/main/evals">six tasks</a> in the repository.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="band" id="inside">
   <div class="wrap">
     <p class="rule"># ---- inside the repository ----</p>
@@ -635,16 +597,6 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
       ta.value = text; document.body.appendChild(ta); ta.select();
       try { document.execCommand("copy"); done(); } catch (err) {}
       document.body.removeChild(ta);
-    }
-  });
-
-  // one square per check: 34 checks, the passed ones filled
-  document.querySelectorAll(".cells").forEach(function (c) {
-    var pass = parseInt(c.getAttribute("data-pass"), 10);
-    for (var k = 0; k < 34; k++) {
-      var s = document.createElement("i");
-      if (k < pass) s.className = "p";
-      c.appendChild(s);
     }
   });
 })();
