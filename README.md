@@ -48,7 +48,7 @@ falls back on the static files.
 
 ## Versions
 
-The static reference was generated on 10 November 2026 from the `dev`
+The static reference was generated on 11 November 2026 from the `dev`
 branches: dartRverse 1.2.7, and dartR.base and the other dartR.* packages
 1.2.6. CRAN holds dartR.base 1.2.3, in which 18 functions have fewer arguments,
 so a call taken from the static files can fail with `unused argument` on a
@@ -66,11 +66,14 @@ build.
 
 ## Status
 
-Version 0.3.0, an early release. It has had one test: six tasks, one run each,
-given to an assistant that could not run R, whose scripts were then run and
-checked. Scripts written with the skill passed 31 of 34 checks; scripts written
-without it passed 13 of 34. One run per task is too few to say how much of that
-difference is chance.
+Version 0.4.0, an early release. It has had one test, on version 0.3.0: six
+tasks, one run each, given to an assistant that could not run R, whose scripts
+were then run and checked. Scripts written with the skill passed 31 of 34
+checks; scripts written without it passed 13 of 34. One run per task is too few
+to say how much of that difference is chance, and the test has not been
+repeated on 0.4.0.
+
+Changes are listed in `NEWS.md`.
 
 The traps for dartR.base are the most complete. Those for dartR.popgen,
 dartR.spatial and dartR.sim are thinner.

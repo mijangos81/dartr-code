@@ -2,7 +2,7 @@
 name: dartr-code
 description: Write, fix or review R code that uses the dartRverse population-genetics packages (dartR.base, dartR.popgen, dartR.spatial, dartR.captive, dartR.sexlinked, dartR.sim) or the retired dartR package. Use whenever a request or a script mentions library(dartRverse), library(dartR), a gl.* function such as gl.read.dart, gl.filter.callrate, gl.report.heterozygosity, gl.pcoa or gl.fst.pop, a genlight object, or DArT, DArTseq or SilicoDArT SNP data, and whenever the user wants to filter SNPs, run a PCA or PCoA, or estimate FST, heterozygosity, relatedness, population structure or Ne from SNP data in R, even if no package is named. Supplies the exact signature of every function and the known traps that make dartR code run without error and return a wrong result.
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Writing dartRverse code
@@ -47,7 +47,7 @@ Three rules follow from this.
 
 1. A function or argument found in neither place does not exist in this release. Say so and offer the nearest real one. Do not write it anyway: an invented argument fails with `unused argument`, and an invented function sends the user searching for something that was never there.
 2. Code recalled from memory or copied from an old script is probably written for the old `dartR`. Check it against `migration-from-dartR.md`.
-3. Each reference file states the package versions it was built from. A user on other versions may see different arguments, so ask them to run `packageVersion("dartR.base")` when it matters, and trust `args(fn)` in their session over the static file.
+3. Each reference file states the package versions it was built from. A user on other versions may see different arguments, so ask them to run `packageVersion("dartR.base")` when it matters, and trust `args(fn)` in their session over the static file. The CRAN releases also contain faults that the `dev` branches have corrected, some of which give a wrong number without an error; they are listed in `traps.md`, section 9.
 
 ## Setup
 
@@ -71,10 +71,11 @@ For a runnable example when the user gives no data, use the bundled objects `pla
 
 Every `gl.*` function works on a genlight object (class `dartR`): individuals in rows, loci in columns.
 
-- **Genotypes.** SNP data: `0` homozygous reference, `1` heterozygous, `2` homozygous alternate, `NA` missing. SilicoDArT data: `1` present, `0` absent. `as.matrix(x)` gives the matrix.
+- **Genotypes.** SNP data: `0` homozygous reference, `1` heterozygous, `2` homozygous alternate, `NA` missing. SilicoDArT data: `1` present, `0` absent. `as.matrix(x)` gives the matrix. Sixty-eight functions stop when given a SilicoDArT object; the reference marks each one with a **Data: SNP only** line.
 - **Accessors.** `nInd(x)`, `nLoc(x)`, `nPop(x)`, `indNames(x)`, `locNames(x)`, `pop(x)`, `popNames(x)`.
 - **Metadata.** `x@other$ind.metrics` (one row per individual, in the object's order), `x@other$loc.metrics` (one row per locus), `x@other$latlon` (columns `lat`, `lon`), `x@other$history` (the calls that built the object).
 - **Subsetting.** `x[i, j]` and the `gl.keep.*` / `gl.drop.*` functions keep those tables in step with the genotypes. They do not recalculate the locus statistics; see trap 6.
+- **File-backed objects.** With `fbm = TRUE` a reader keeps the genotypes in a file in R's temporary folder (`x@fbm`) and not in memory. Use it only for data too large for memory, and save such an object with `gl.save()`: `saveRDS()` stores a pointer to a file that is gone in the next session. Read `references/traps.md`, section 10, before writing code for one.
 
 Attach anything to individuals **by name, never by position**: `pop(x) <- sheet$pop[match(indNames(x), sheet$id)]`, then check for `NA`. Sample sheets are rarely in the object's order.
 
@@ -89,7 +90,7 @@ Attach anything to individuals **by name, never by position**: `pop(x) <- sheet$
 
 ## Traps: code that runs and is wrong
 
-Each was reproduced on dartR.base 1.2.6 with the bundled data. `references/traps.md` has more, grouped by topic, including relatedness, LD, sex-linked loci, and how to download and call the external programs (STRUCTURE, NeEstimator, COLONY and others) with `gl.download.binary()`. Read the relevant section before writing that kind of analysis.
+Each was reproduced on dartR.base 1.2.6 with the bundled data. `references/traps.md` has more, grouped by topic, including relatedness and kinship scales, LD, sex-linked loci, contamination and batch effects, file-backed objects, results that differ on the CRAN release, and how to download and call the external programs (STRUCTURE, NeEstimator, COLONY and others) with `gl.download.binary()`. Read the relevant section before writing that kind of analysis.
 
 1. **`verbose = 0` also turns off plots**, even with `plot.display = TRUE`, and so does `gl.set.verbosity(0)`. Use `verbose = 1` when the user needs the figure.
 2. **Report functions do not return the same kind of object.** `gl.report.callrate` returns the genlight; `gl.report.heterozygosity` returns a data frame; `gl.report.fstat` returns a list. Writing `x <- gl.report.heterozygosity(x)` replaces the data with a table. Read **Returns** in the reference.
