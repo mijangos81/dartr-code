@@ -12,6 +12,9 @@
 # by ";"). The script stops if a function in the reference has no row, or a
 # row names a function that the reference does not have, so a package update
 # cannot leave the tree out of step with the reference. Base R only.
+#
+# The utils.* functions are internal helpers. They are in the reference but
+# are left out of the tree, so they have no row in the table (see LEFT_OUT).
 
 args <- commandArgs(trailingOnly = FALSE)
 self <- sub("^--file=", "", args[grep("^--file=", args)])
@@ -20,6 +23,7 @@ ref_dir <- file.path(root, "skills", "dartr-code", "references")
 csv_file <- file.path(root, "docs", "function-groups.csv")
 out_file <- file.path(root, "docs", "functions.js")
 REF_URL <- "https://github.com/mijangos81/dartr-code/blob/main/skills/dartr-code/references/"
+LEFT_OUT <- "^utils[.]"   # names matching this are not shown in the tree
 
 read_utf8 <- function(f) readLines(f, encoding = "UTF-8", warn = FALSE)
 
@@ -40,6 +44,8 @@ for (ln in idx) {
     index[[nm]] <- list(p = pkg, f = file)
   }
 }
+left_out <- grep(LEFT_OUT, names(index), value = TRUE)
+index <- index[setdiff(names(index), left_out)]
 
 # ---- one block per function in each reference file ----------------------------
 # GitHub's anchor for a heading: lower case, punctuation removed, spaces to "-".
@@ -77,6 +83,8 @@ if (length(missing_block)) stop("In index.md but with no block in its file: ", p
 g <- read.csv(csv_file, stringsAsFactors = FALSE, check.names = FALSE, encoding = "UTF-8")
 names(g)[1] <- "fn"
 g$also_in[is.na(g$also_in)] <- ""
+has_row <- intersect(g$fn, left_out)
+if (length(has_row)) stop("Remove these rows from function-groups.csv; the tree leaves these functions out: ", paste(has_row, collapse = ", "))
 no_group <- setdiff(names(index), g$fn)
 unknown <- setdiff(g$fn, names(index))
 dup <- unique(g$fn[duplicated(g$fn)])
@@ -108,6 +116,7 @@ out <- c(
   paste0("  \"reference_date\": ", q(ref_date), ","),
   paste0("  \"versions\": ", q(versions), ","),
   paste0("  \"ref\": ", q(REF_URL), ","),
+  paste0("  \"left_out\": ", length(left_out), ","),
   "  \"stages\": ["
 )
 for (si in seq_along(stages)) {
@@ -134,5 +143,5 @@ con <- file(out_file, open = "wb")
 writeLines(enc2utf8(out), con, sep = "\n", useBytes = TRUE)
 close(con)
 
-cat(sprintf("Wrote %s: %d functions in %d groups, %d shown in a second group.\n",
-            out_file, length(fns), length(unique(g$group)), sum(lengths(also) > 0)))
+cat(sprintf("Wrote %s: %d functions in %d groups, %d shown in a second group, %d left out (%s).\n",
+            out_file, length(fns), length(unique(g$group)), sum(lengths(also) > 0), length(left_out), LEFT_OUT))
