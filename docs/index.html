@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dartr-code: dartRverse code your assistant has checked</title>
-<meta name="description" content="A skill that gives Claude, Codex and ChatGPT the exact signature of every dartRverse function and the known calls that run without an error and return a wrong result.">
+<title>dartr-code: a dartRverse reference for AI assistants</title>
+<meta name="description" content="Function arguments, version differences and known pitfalls in dartRverse, for Claude Code, Codex and ChatGPT.">
 <meta property="og:title" content="dartr-code">
-<meta property="og:description" content="It ran without an error. It was still wrong. A skill that makes AI assistants check dartRverse code before they write it.">
+<meta property="og:description" content="Help your AI assistant check dartRverse function arguments and avoid known pitfalls before writing your code.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -353,7 +353,7 @@
       dartr-code
     </a>
     <nav aria-label="Page">
-      <a class="hide-s" href="#gets">What it gives</a>
+      <a class="hide-s" href="#gets">How it helps</a>
       <a class="hide-s" href="#functions">Functions</a>
       <a href="#install">Install</a>
       <a class="hide-s" href="#evidence">Evidence</a>
@@ -368,7 +368,7 @@
   <div class="wrap">
     <div>
       <h1><span>It ran without an&nbsp;error.</span><span class="still">It was still wrong.</span></h1>
-      <p class="lede">An AI assistant writes dartRverse code from memory. It misremembers argument names, and it writes calls that run and return the wrong result. <strong>dartr-code</strong> is a skill that gives the assistant the exact signature of all 263 functions and the list of known traps, so that it can check each call before it writes it.</p>
+      <p class="lede">AI assistants sometimes confuse dartRverse argument names or write code that runs but gives the wrong result. <strong>dartr-code</strong> is a set of instructions and reference files covering all 263 functions and known pitfalls. Your assistant can check each call against these references before writing your code.</p>
       <div class="actions">
         <a class="btn primary" href="#install">Install the skill</a>
         <a class="btn ghost" href="https://github.com/mijangos81/dartr-code">Source on GitHub</a>
@@ -392,7 +392,7 @@
 nInd(x)
 <span class="o">#&gt; [1] 240</span></code></pre>
         <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>The report holds 250 samples. Ten had no row in <code>samples.csv</code> and were left out. At the default verbosity one line in a long log says so; with <code>verbose = 0</code> nothing does.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>The report contains 250 samples, but ten had no row in <code>samples.csv</code> and were excluded. At the default verbosity, R mentions this in the log. With <code>verbose = 0</code>, it says nothing.</span></div>
         <div class="note fix"><span class="k">The skill says</span><span>Give every sample a row, then compare <code>nInd(x)</code> with the number of samples you sent.</span></div>
       </div>
 
@@ -403,7 +403,7 @@ x &lt;- gl.keep.ind(platypus.gl, ind.list = keep$id)
 gl.fst.pop(x)
 <span class="o"># pairwise FST came out as 0.004, -0.011 and -0.017</span></code></pre>
         <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span><code>gl.keep.ind()</code> returns individuals in the object's order, not the order of the list. 21 of the 30 animals received another animal's group, and FST values of 0.052 to 0.081 came out as zero.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span><code>gl.keep.ind()</code> keeps individuals in the object's original order. Assigning labels in the list's order put 21 of the 30 animals in the wrong group. FST values that were between 0.052 and 0.081 fell to around zero.</span></div>
         <div class="note fix"><span class="k">The skill says</span><span>Assign by name: <code>pop(x) &lt;- keep$new_group[match(indNames(x), keep$id)]</code></span></div>
       </div>
 
@@ -412,7 +412,7 @@ gl.fst.pop(x)
 nLoc(x)
 <span class="o">#&gt; [1] 1000</span></code></pre>
         <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>425 of those 1,000 loci are monomorphic or entirely missing in the 41 animals kept, and <code>loc.metrics$CallRate</code> still describes all 81.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>Among the 41 retained animals, 425 of the 1,000 loci are monomorphic or entirely missing. The values in <code>loc.metrics$CallRate</code> still describe the original 81 animals.</span></div>
         <div class="note fix"><span class="k">The skill says</span><span>Add <code>recalc = TRUE, mono.rm = TRUE</code>. That leaves 575 loci with their statistics recalculated.</span></div>
       </div>
 
@@ -420,12 +420,12 @@ nLoc(x)
 <pre><code>pc &lt;- gl.pcoa(x, <span class="t">plot.display = FALSE</span>)
 <span class="o">#&gt; Error in gl.pcoa(x, plot.display = FALSE) :
 #&gt;   unused argument (plot.display = FALSE)</span></code></pre>
-        <div class="note said"><span class="k">R reported</span><span>An error that does not say what the argument should have been.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>Most dartR functions take <code>plot.display</code>. <code>gl.pcoa()</code> takes <code>plot.out</code>. The assistant wrote the name it remembered from the others.</span></div>
-        <div class="note fix"><span class="k">The skill says</span><span>Look the signature up before calling: <code>gl.pcoa(x, plot.out = FALSE)</code></span></div>
+        <div class="note said"><span class="k">R reported</span><span>The argument is rejected, but the error doesn't give the correct name.</span></div>
+        <div class="note trap"><span class="k">What happened</span><span>Most dartRverse functions use <code>plot.display</code>, while <code>gl.pcoa()</code> uses <code>plot.out</code>. The assistant assumed they used the same name.</span></div>
+        <div class="note fix"><span class="k">The skill says</span><span>Check the function's arguments first: <code>gl.pcoa(x, plot.out = FALSE)</code></span></div>
       </div>
 
-      <p class="measured">Each result was measured on dartR.base 1.2.6 with the example data that ships in dartR.data.</p>
+      <p class="measured">These examples were tested with dartR.base 1.2.6 and the data included in dartR.data.</p>
     </div>
   </div>
 </div>
@@ -433,19 +433,19 @@ nLoc(x)
 <section class="band" id="gets">
   <div class="wrap">
     <p class="rule"># ---- what the assistant gets ----</p>
-    <h2>Three things it does not have from memory</h2>
+    <h2>What the assistant can check</h2>
     <div class="gets">
       <div>
-        <h3>The exact signature</h3>
-        <p>A small R script reads the signature, the arguments and the return value of any function from the packages installed on your computer, so the answer fits your version. Where R cannot be run, the same reference ships as plain files.</p>
+        <h3>Function arguments and defaults</h3>
+        <p>The R helper reads function arguments, defaults and documented return values from your installed packages, so the reference matches your version. If your assistant cannot run R, it can use the included reference files.</p>
       </div>
       <div>
-        <h3>The known traps</h3>
-        <p>Calls that run and mislead, grouped by topic: reading data, filtering, FST and heterozygosity, relatedness, file-backed objects, external programs. Each one states its evidence: tested, read in the source, or reported by the developers.</p>
+        <h3>Known pitfalls</h3>
+        <p>The notes cover data import, filtering, FST, heterozygosity and relatedness, as well as file-backed objects and external programs. Each note says whether the issue was tested, identified in the source code or reported by a developer.</p>
       </div>
       <div>
-        <h3>The version you are on</h3>
-        <p>The CRAN releases and the development branches differ. The skill lists the functions that give a wrong result on CRAN and are corrected in development, and tells the assistant to ask which version you have.</p>
+        <h3>Version differences</h3>
+        <p>Some functions behave differently in CRAN releases and development versions. The skill documents bugs fixed in development and tells the assistant to check which version you're using.</p>
       </div>
     </div>
   </div>
@@ -454,11 +454,11 @@ nLoc(x)
 <section class="band" id="functions">
   <div class="wrap">
     <p class="rule"># ---- every function ----</p>
-    <h2>Every function, sorted by the job it does</h2>
-    <p class="intro">This is the reference the skill carries, drawn as a tree. Open a group to see its functions, then pick one to read its signature. The dot beside a function shows its package.</p>
+    <h2>Browse functions by task</h2>
+    <p class="intro">Explore the skill's reference below. Open a group and select a function to see its arguments and defaults. The coloured dot beside each function identifies its package.</p>
 
     <div class="fmap" id="fn-map">
-      <p class="ffallback">The tree needs JavaScript and did not load. The same functions are listed in the <a href="https://github.com/mijangos81/dartr-code/blob/main/skills/dartr-code/references/index.md">function index</a> on GitHub.</p>
+      <p class="ffallback">The function browser hasn't loaded. You can still find every function in the <a href="https://github.com/mijangos81/dartr-code/blob/main/skills/dartr-code/references/index.md">function index</a> on GitHub.</p>
       <div class="fmap-bar">
         <div class="fsearch">
           <label class="sr" for="fn-q">Find a function</label>
@@ -487,7 +487,7 @@ nLoc(x)
         <div class="flist" id="fn-list" hidden></div>
       </div>
     </div>
-    <p class="measured" id="fn-caption">263 functions in 19 groups, read from the development branches of the packages.</p>
+    <p class="measured" id="fn-caption">263 functions in 19 groups, based on the packages' development versions.</p>
   </div>
 </section>
 
@@ -495,7 +495,7 @@ nLoc(x)
   <div class="wrap">
     <p class="rule"># ---- install ----</p>
     <h2>Install it for your assistant</h2>
-    <p class="intro">One folder serves all three. Copy it to the place your assistant reads skills from.</p>
+    <p class="intro">Choose your assistant below for installation instructions.</p>
 
     <div class="install">
       <div class="tabs" role="tablist" aria-label="Assistant">
@@ -511,7 +511,7 @@ mkdir -p ~/.claude/skills
 cp -r dartr-code/skills/dartr-code ~/.claude/skills/</code></pre>
           <button class="copy" type="button">Copy</button>
         </div>
-        <p>Then ask for dartR code as usual. Claude loads the skill when the request calls for it. To use it in one project only, copy the folder into <code>.claude/skills/</code> inside that project.</p>
+        <p>Claude can then use the skill when you ask for dartRverse code. For a single project, copy the folder into <code>.claude/skills/</code> inside that project.</p>
       </div>
 
       <div class="panel" role="tabpanel" id="q-codex" aria-labelledby="i-codex">
@@ -521,7 +521,7 @@ mkdir -p ~/.agents/skills
 cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
           <button class="copy" type="button">Copy</button>
         </div>
-        <p>Codex loads the skill when the request calls for it. Type <code>$dartr-code</code> in a prompt to call it by name.</p>
+        <p>Codex can select the skill for dartRverse requests, or you can ask for it explicitly by typing <code>$dartr-code</code> in your prompt.</p>
       </div>
 
       <div class="panel" role="tabpanel" id="q-chatgpt" aria-labelledby="i-chatgpt">
@@ -529,19 +529,19 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
 <pre><code>git clone https://github.com/mijangos81/dartr-code.git</code></pre>
           <button class="copy" type="button">Copy</button>
         </div>
-        <p>The repository is also a plugin. Install the cloned folder as a local plugin by following <a href="https://developers.openai.com/plugins/build/plugins">OpenAI's instructions</a>, section &ldquo;Install a local plugin manually&rdquo;.</p>
-        <p>ChatGPT in the browser cannot install a plugin from a folder or a zip file. It takes plugins from its directory, where this one is not listed.</p>
+        <p>The repository is also a plugin. To install the cloned folder locally, follow <a href="https://developers.openai.com/plugins/build/plugins">OpenAI's instructions</a> under &ldquo;Install a local plugin manually&rdquo;.</p>
+        <p>This plugin isn't listed in ChatGPT's plugin directory, so it isn't available in the browser. Uploading the folder or ZIP file to a chat doesn't install it.</p>
       </div>
     </div>
 
-    <p class="needs">On Windows, copy the folder <code>skills\dartr-code</code> by hand into the same place under your user folder. For the lookup script the assistant has to be able to run <code>Rscript</code> from an R that holds the dartRverse; without that it reads the plain reference files.</p>
+    <p class="needs">On Windows, copy <code>skills\dartr-code</code> into the appropriate skills folder in your user directory. The lookup helper needs <code>Rscript</code> and the relevant dartRverse packages. Without them, the assistant uses the included reference files.</p>
   </div>
 </section>
 
 <section class="band" id="evidence">
   <div class="wrap">
     <p class="rule"># ---- evidence ----</p>
-    <h2>One test so far, and its limits</h2>
+    <h2>What the first test showed</h2>
     <div class="evidence">
       <div>
         <div class="tally">
@@ -554,8 +554,8 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
         </div>
       </div>
       <div class="caveat">
-        <p>Six analysis tasks were given to an assistant (Claude) that could not run R, once with the skill and once without. Its scripts were then run in a fresh R session and their output files checked against answer keys.</p>
-        <p>One run per task is too few to say how much of the difference is chance. The test used version 0.3.0 and has not been repeated since, and no task has yet been run with the skill in Codex or ChatGPT. The <a href="https://github.com/mijangos81/dartr-code/tree/main/evals">six tasks</a> are in the repository.</p>
+        <p>Claude completed six analysis tasks, each once with the skill and once without it. It could not run R during those tasks. The scripts were then run in a fresh R session, and their output files were checked against answer keys.</p>
+        <p>One run per task is too few to say how much of the difference is due to chance. The test used version 0.3.0 and hasn't been repeated for later versions. No task has yet been run with the skill in Codex or ChatGPT. You can find the <a href="https://github.com/mijangos81/dartr-code/tree/main/evals">six tasks</a> in the repository.</p>
       </div>
     </div>
   </div>
@@ -566,9 +566,9 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
     <p class="rule"># ---- inside the repository ----</p>
     <h2>What you are installing</h2>
     <div class="tree">
-      <div><span class="path">skills/dartr-code/SKILL.md</span><span class="what">What the assistant reads first: how to look a function up, the order of work, and the ten most common traps.</span></div>
-      <div><span class="path">skills/dartr-code/scripts/dartr_ref.R</span><span class="what">Looks functions up in the dartR packages installed on your computer.</span></div>
-      <div><span class="path">skills/dartr-code/references/</span><span class="what">Twenty files: every function, the full list of traps, what changed from the old <code>dartR</code> package, and a map of the ebook and workshop tutorials.</span></div>
+      <div><span class="path">skills/dartr-code/SKILL.md</span><span class="what">Instructions for checking functions, ordering the analysis steps and avoiding the ten most common pitfalls.</span></div>
+      <div><span class="path">skills/dartr-code/scripts/dartr_ref.R</span><span class="what">Reads function arguments and help from your installed dartRverse packages.</span></div>
+      <div><span class="path">skills/dartr-code/references/</span><span class="what">Twenty files covering every function, known pitfalls, changes from the old <code>dartR</code> package, and relevant ebook chapters and tutorials.</span></div>
       <div><span class="path">plugin.json</span><span class="what">Packaging for Codex and the ChatGPT desktop app.</span></div>
       <div><span class="path">evals/</span><span class="what">The six test tasks and their input files.</span></div>
     </div>
@@ -580,12 +580,12 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
 <footer>
   <div class="wrap">
     <div>
-      <h3>Found a wrong signature or a missing trap?</h3>
+      <h3>Something wrong or missing?</h3>
       <p><a href="https://github.com/mijangos81/dartr-code/issues">Open an issue</a>, or post to the <a href="https://groups.google.com/g/dartr">dartR Google Group</a>.</p>
     </div>
     <div>
       <h3>The packages</h3>
-      <p>dartr-code describes the <a href="https://github.com/green-striped-gecko/dartRverse">dartRverse</a>: dartR.base, dartR.popgen, dartR.spatial, dartR.captive, dartR.sexlinked and dartR.sim.</p>
+      <p>The reference covers <a href="https://github.com/green-striped-gecko/dartRverse">dartRverse</a>: dartR.base, dartR.popgen, dartR.spatial, dartR.captive, dartR.sexlinked and dartR.sim.</p>
     </div>
     <div>
       <h3>Licence</h3>
