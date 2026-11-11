@@ -5,6 +5,8 @@ A skill that helps an AI coding assistant write correct R code for the
 population-genetics packages: dartR.base, dartR.popgen, dartR.spatial,
 dartR.captive, dartR.sexlinked and dartR.sim.
 
+Website, with four worked examples: <https://mijangos81.github.io/dartr-code/>
+
 A skill is a folder of instructions and reference files that the assistant
 loads when a task calls for it. This one targets the two ways dartR code goes
 wrong when an assistant writes it from memory:
