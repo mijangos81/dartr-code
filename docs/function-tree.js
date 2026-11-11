@@ -28,13 +28,13 @@
   // ---- the model: two stages, their groups, and the functions in each group ----
   var stages = [], groups = [], home = {}, alsoIn = {};
   D.stages.forEach(function (s, si) {
-    var st = { kind: "stage", i: si, name: s.name, r: 36, groups: [] };
+    var st = { kind: "stage", i: si, name: s.name, r: 44, groups: [] };
     s.groups.forEach(function (g) {
       var items = g.fns.map(function (n) { return { name: n, also: false }; })
         .concat(g.also.map(function (n) { return { name: n, also: true }; }));
       items.sort(function (a, b) { return byName(a.name, b.name); });
       var grp = { kind: "group", name: g.name, stage: st, items: items, n: items.length, open: false,
-                  r: 15 + Math.sqrt(items.length) * 1.7 };
+                  r: 18 + Math.sqrt(items.length) * 1.9 };
       g.fns.forEach(function (n) { home[n] = grp; });
       g.also.forEach(function (n) { (alsoIn[n] = alsoIn[n] || []).push(grp); });
       st.groups.push(grp); groups.push(grp);
@@ -46,7 +46,8 @@
   var cap = $("fn-caption");
   if (cap) {
     cap.textContent = names.length + " functions in " + groups.length + " groups. " + nAlso +
-      " of them do two jobs and sit in two groups; the tree draws those with a dashed outline. Read on " + D.reference_date +
+      " of them do two jobs and sit in two groups; the tree draws those with a dashed outline. " +
+      (D.left_out ? "The " + D.left_out + " internal helpers (utils.*) are not shown. " : "") + "Read on " + D.reference_date +
       " from the development branches: " + D.versions + ".";
   }
 
@@ -267,7 +268,7 @@
   var tree = null;
   function makeTree() {
     var d3 = window.d3;
-    var PAD = 12, ROW = 26, CH = 7.25;
+    var PAD = 12, ROW = 31, CH = 9;   // CH: width of one character of a function name (15px monospace)
     var svg = d3.select(svgNode);
     var layer = svg.append("g");
     var linkLayer = layer.append("g");
@@ -283,7 +284,7 @@
       }
       return best < 0 ? [label] : [label.slice(0, best), label.slice(best + 1)];
     }
-    function pillW(name) { return 34 + name.length * CH; }
+    function pillW(name) { return 42 + name.length * CH; }
 
     // where the functions of an open group sit, relative to the group's centre
     function layout(g) {
@@ -298,7 +299,7 @@
         var h = Math.ceil(items.length / 2);
         left = items.slice(0, h); right = items.slice(h);
       }
-      var gap = Math.max(g.r + 30, g.labelHalf + 12);
+      var gap = Math.max(g.r + 34, g.labelHalf + 14);
       function place(col, side) {
         var w = 0;
         col.forEach(function (it, i) {
@@ -314,7 +315,7 @@
     function setBox(n) {
       if (n.kind !== "group") { n.box = { x0: -n.r - PAD, x1: n.r + PAD, y0: -n.r - PAD, y1: n.r + PAD }; return; }
       var half = Math.max(n.r, n.labelHalf);
-      var b = { x0: -half, x1: half, y0: -n.r, y1: n.r + 9 + n.lines.length * 15 };
+      var b = { x0: -half, x1: half, y0: -n.r, y1: n.r + 11 + n.lines.length * 20 };
       if (n.open) {
         b.x0 = Math.min(b.x0, n.ext.x0); b.x1 = Math.max(b.x1, n.ext.x1);
         b.y0 = Math.min(b.y0, n.ext.y0); b.y1 = Math.max(b.y1, n.ext.y1);
@@ -331,7 +332,7 @@
         var a = mid + (n > 1 ? i / (n - 1) - 0.5 : 0) * span;
         g.x = st.x + 230 * Math.cos(a); g.y = st.y + 230 * Math.sin(a);
         g.lines = wrap(g.name);
-        g.labelHalf = Math.max.apply(null, g.lines.map(function (l) { return l.length; })) * 3.45 + 2;
+        g.labelHalf = Math.max.apply(null, g.lines.map(function (l) { return l.length; })) * 4.5 + 2;
         links.push({ source: st, target: g });
       });
     });
@@ -410,14 +411,14 @@
       g.items.forEach(function (it) { var p = D.fns[it.name].p; byPkg[p] = (byPkg[p] || 0) + 1; });
       var parts = PKGS.filter(function (p) { return byPkg[p]; }).map(function (p) { return { p: p, n: byPkg[p] }; });
       g.parts = parts;
-      var arc = d3.arc().innerRadius(g.r - 6).outerRadius(g.r).padAngle(parts.length > 1 ? 0.07 : 0);
+      var arc = d3.arc().innerRadius(g.r - 7).outerRadius(g.r).padAngle(parts.length > 1 ? 0.07 : 0);
       var h = d3.select(this);
       h.append("circle").attr("class", "core").attr("r", g.r);
       h.selectAll("path.arc").data(pie(parts)).join("path")
         .attr("class", function (d) { return "arc pk-" + KEY[d.data.p]; }).attr("d", arc);
       h.append("text").attr("class", "count").attr("dy", "0.35em").text(g.n);
       g.lines.forEach(function (line, i) {
-        h.append("text").attr("class", "label").attr("y", g.r + 20 + i * 15).text(line);
+        h.append("text").attr("class", "label").attr("y", g.r + 25 + i * 20).text(line);
       });
       h.append("title").text(g.name + ": " + parts.map(function (d) { return d.n + " in " + d.p; }).join(", "));
     });
@@ -435,7 +436,7 @@
       stageSel.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
       grpSel.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
     }
-    sim.on("tick", draw);
+    sim.on("tick", function () { draw(); track(); });
 
     function renderLeaves(g) {
       var node = grpSel.filter(function (d) { return d === g; });
@@ -462,11 +463,11 @@
             .attr("tabindex", 0).attr("role", "button")
             .attr("aria-label", function (d) { var f = D.fns[d.name]; return d.name + ", " + f.p + ": " + f.t; })
             .attr("transform", "translate(0,0)").style("opacity", 0);
-          leaf.append("rect").attr("y", -11).attr("height", 22).attr("rx", 11)
+          leaf.append("rect").attr("y", -13.5).attr("height", 27).attr("rx", 13.5)
             .attr("x", function (d) { return d.side > 0 ? 0 : -d.w; }).attr("width", function (d) { return d.w; });
-          leaf.append("circle").attr("class", "dot").attr("r", 4).attr("cx", function (d) { return d.side * 13; });
+          leaf.append("circle").attr("class", "dot").attr("r", 4.5).attr("cx", function (d) { return d.side * 16; });
           leaf.append("text").attr("dy", "0.35em")
-            .attr("x", function (d) { return d.side * 23; })
+            .attr("x", function (d) { return d.side * 28; })
             .attr("text-anchor", function (d) { return d.side > 0 ? "start" : "end"; })
             .text(function (d) { return d.name; });
           press(leaf, function (ev, d) { ev.stopPropagation(); select(d.name); });
@@ -499,7 +500,10 @@
         if (ev.type === "touchstart") return ev.touches.length > 1;   // one finger scrolls the page
         return !ev.button;
       })
-      .on("zoom", function (ev) { layer.attr("transform", ev.transform); tipBox.hidden = true; });
+      .on("zoom", function (ev) {
+        layer.attr("transform", ev.transform); tipBox.hidden = true;
+        if (ev.sourceEvent) cam = null;          // the reader took over: stop following
+      });
     svg.call(zoom).on("dblclick.zoom", null);
 
     function world(n) { return { x0: n.x + n.box.x0, x1: n.x + n.box.x1, y0: n.y + n.box.y0, y1: n.y + n.box.y1 }; }
@@ -533,19 +537,38 @@
       tipBox.style.left = Math.max(8, x) + "px";
       tipBox.style.top = Math.max(8, y) + "px";
     }
-    function fit(box, maxScale, instant) {
+    // the zoom that shows a box, or the whole tree when there is no box
+    function viewOf(box, maxScale) {
       var W = svgNode.clientWidth - reserve(!box), H = svgNode.clientHeight, m = 26;
       box = box || union(nodes);
-      if (W <= 0 || H <= 0) return;
+      if (W <= 0 || H <= 0) return null;
       var s = Math.min(maxScale || 1.15, (W - 2 * m) / (box.x1 - box.x0), (H - 2 * m) / (box.y1 - box.y0));
-      var t = d3.zoomIdentity.translate(W / 2 - s * (box.x0 + box.x1) / 2, H / 2 - s * (box.y0 + box.y1) / 2).scale(s);
+      return d3.zoomIdentity.translate(W / 2 - s * (box.x0 + box.x1) / 2, H / 2 - s * (box.y0 + box.y1) / 2).scale(s);
+    }
+    function fit(box, maxScale, instant) {
+      var t = viewOf(box, maxScale);
+      if (!t) return;
+      cam = null;
       if (reduced || instant) svg.call(zoom.transform, t);
       else svg.transition().duration(600).call(zoom.transform, t);
     }
-    function settle(then) {
-      if (reduced) { sim.stop(); for (var i = 0; i < 220; i++) sim.tick(); draw(); then(); return; }
+    // When a group opens or closes, the layout keeps moving for a moment. The view
+    // follows its target while that happens, easing toward it on every tick. The
+    // target is a function that gives a box, or nothing for the whole tree.
+    var cam = null;
+    function follow(target, ms) {
+      if (reduced) { sim.stop(); for (var i = 0; i < 220; i++) sim.tick(); draw(); fit(target()); return; }
+      svg.interrupt();
+      cam = { target: target, until: Date.now() + (ms || 2200) };
       sim.alpha(0.7).restart();
-      setTimeout(then, 480);
+    }
+    function track() {
+      if (!cam) return;
+      if (Date.now() > cam.until) { cam = null; return; }
+      var to = viewOf(cam.target()), now = d3.zoomTransform(svgNode), e = 0.16;
+      if (!to) return;
+      svg.call(zoom.transform, d3.zoomIdentity
+        .translate(now.x + (to.x - now.x) * e, now.y + (to.y - now.y) * e).scale(now.k + (to.k - now.k) * e));
     }
     function toggle(g, open, quiet) {
       open = open == null ? !g.open : open;
@@ -555,32 +578,32 @@
       setBox(g);
       renderLeaves(g);
       allBtn.textContent = groups.every(function (x) { return x.open; }) ? "Close all" : "Open all";
-      if (!quiet) settle(function () { fit(open ? world(g) : null); });
+      if (!quiet) follow(function () { return g.open ? world(g) : null; });
     }
     function reveal(name) {
       var g = home[name];
       if (state.pkg && D.fns[name].p !== state.pkg) setPkg(null);
       if (g.open) { fit(world(g)); return; }
       toggle(g, true, true);
-      settle(function () { fit(world(g)); });
+      follow(function () { return world(g); });
     }
 
     var drag = d3.drag().container(function () { return layer.node(); }).subject(function (ev, d) { return d; })
-      .on("start", function (ev, d) { if (!ev.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
+      .on("start", function (ev, d) { cam = null; if (!ev.active) sim.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
       .on("drag", function (ev, d) { d.fx = ev.x; d.fy = ev.y; })
       .on("end", function (ev, d) { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; });
     hubSel.call(drag); stageSel.call(drag);
 
     // ---- the buttons under the tree ----
     var allBtn = $("fn-all");
-    $("fn-in").addEventListener("click", function () { svg.transition().duration(reduced ? 0 : 250).call(zoom.scaleBy, 1.4); });
-    $("fn-out").addEventListener("click", function () { svg.transition().duration(reduced ? 0 : 250).call(zoom.scaleBy, 1 / 1.4); });
+    $("fn-in").addEventListener("click", function () { cam = null; svg.transition().duration(reduced ? 0 : 250).call(zoom.scaleBy, 1.4); });
+    $("fn-out").addEventListener("click", function () { cam = null; svg.transition().duration(reduced ? 0 : 250).call(zoom.scaleBy, 1 / 1.4); });
     $("fn-fit").addEventListener("click", function () { fit(null); });
     allBtn.addEventListener("click", function () {
       var open = !groups.every(function (x) { return x.open; });
       groups.forEach(function (g) { toggle(g, open, true); });
-      if (reduced) settle(function () { fit(null); });
-      else { sim.alpha(0.9).restart(); setTimeout(function () { fit(null); }, 900); }
+      follow(function () { return null; }, 3000);
+      if (!reduced) sim.alpha(0.9);
     });
 
     for (var i = 0; i < 300; i++) sim.tick();

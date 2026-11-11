@@ -5,8 +5,8 @@ A skill that helps an AI coding assistant write correct R code for the
 population-genetics packages: dartR.base, dartR.popgen, dartR.spatial,
 dartR.captive, dartR.sexlinked and dartR.sim.
 
-Website, with four worked examples and a tree of all 263 functions sorted by
-the job they do: <https://mijangos81.github.io/dartr-code/>
+Website, with four worked examples and a tree of the functions sorted by the
+job they do: <https://mijangos81.github.io/dartr-code/>
 
 A skill is a folder of instructions and reference files that the assistant
 loads when a task calls for it. This one targets the two ways dartR code goes
@@ -99,6 +99,8 @@ Rscript docs/build-functions.R
 
 The script stops and names any function that has no row in
 `docs/function-groups.csv`. Add the row there to give a new function its group.
+The `utils.*` functions are internal helpers: they are in the reference but are
+left out of the tree, so they have no row.
 
 ## Status
 

@@ -304,7 +304,7 @@
   .pk-verse { --pk: var(--pk-verse); }
 
   .fbody { position: relative; }
-  .fstage { position: relative; height: 640px; overflow: hidden; border-radius: 0 0 16px 16px; }
+  .fstage { position: relative; height: 700px; overflow: hidden; border-radius: 0 0 16px 16px; }
   .fstage svg { display: block; width: 100%; height: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
   .fstage svg:active { cursor: grabbing; }
   .fstage svg :focus { outline: none; }
@@ -313,16 +313,16 @@
   .rootn, .stage, .hub, .leaf { cursor: pointer; }
   .rootn path { fill: transparent; stroke-linejoin: round; }
   .stage circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
-  .stage text { fill: var(--accent-ink); font: 700 14px "Bricolage Grotesque", "IBM Plex Sans", sans-serif; text-anchor: middle; }
+  .stage text { fill: var(--accent-ink); font: 700 18px "Bricolage Grotesque", "IBM Plex Sans", sans-serif; text-anchor: middle; }
   .hub .core { fill: var(--card); }
   .arc { fill: var(--pk); stroke: var(--card); stroke-width: 1; }
-  .hub .count { fill: var(--ink); font: 600 11.5px "IBM Plex Mono", ui-monospace, monospace; text-anchor: middle; }
-  .hub .label { fill: var(--ink); font: 600 13px "IBM Plex Sans", sans-serif; text-anchor: middle; paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  .hub .count { fill: var(--ink); font: 600 14px "IBM Plex Mono", ui-monospace, monospace; text-anchor: middle; }
+  .hub .label { fill: var(--ink); font: 600 17px "IBM Plex Sans", sans-serif; text-anchor: middle; paint-order: stroke; stroke: var(--card); stroke-width: 5px; stroke-linejoin: round; }
   .grp.open .hub .label { fill: var(--accent-ink); }
   .hub:hover .core, .stage:hover circle { fill: var(--accent-soft); }
   .leaf rect { fill: var(--card); stroke: var(--line); stroke-width: 1; }
   .leaf .dot { fill: var(--pk); }
-  .leaf text { fill: var(--ink); font: 12px "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  .leaf text { fill: var(--ink); font: 15px "IBM Plex Mono", ui-monospace, Menlo, monospace; }
   .leaf:hover rect { stroke: var(--muted); }
   .leaf.also rect { stroke-dasharray: 4 3; stroke: var(--muted); }
   .leaf.dep text { text-decoration: line-through; fill: var(--muted); }
@@ -573,7 +573,7 @@ nLoc(x)
         <div class="flist" id="fn-list" hidden></div>
       </div>
     </div>
-    <p class="measured" id="fn-caption">263 functions in 19 groups, based on the packages' development versions.</p>
+    <p class="measured" id="fn-caption">241 functions in 19 groups, based on the packages' development versions. The 22 internal helpers (utils.*) are not shown.</p>
   </div>
 </section>
 
