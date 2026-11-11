@@ -24,21 +24,43 @@ wrong when an assistant writes it from memory:
 | `skills/dartr-code/SKILL.md` | What the assistant reads first: how to look up a function, the order of work, and the ten most common traps |
 | `skills/dartr-code/scripts/dartr_ref.R` | Reads exact signatures and help text from the dartR packages installed on your computer |
 | `skills/dartr-code/references/` | The same function reference as static files, for assistants that cannot run R; the full list of traps; what changed from the old `dartR`; and a map of the ebook and workshop tutorials |
+| `plugin.json`, `skills/dartr-code/agents/openai.yaml` | Packaging for Codex and the ChatGPT desktop app |
 | `evals/` | Six test tasks and their input files |
 
 ## Install
 
-For Claude Code, copy the folder `skills/dartr-code` into `.claude/skills/` in
-your home folder (available in every project) or into `.claude/skills/` inside
-one project:
+The same folder, `skills/dartr-code`, serves every assistant. Get it with:
 
 ```bash
 git clone https://github.com/mijangos81/dartr-code.git
+```
+
+**Claude Code.** Copy the folder into `.claude/skills/` in your home folder
+(available in every project) or into `.claude/skills/` inside one project:
+
+```bash
 mkdir -p ~/.claude/skills
 cp -r dartr-code/skills/dartr-code ~/.claude/skills/
 ```
 
-The assistant then loads the skill whenever you ask for dartR code. Other
+**Codex.** Copy the folder into `.agents/skills/` in your home folder, or into
+`.agents/skills/` inside one repository:
+
+```bash
+mkdir -p ~/.agents/skills
+cp -r dartr-code/skills/dartr-code ~/.agents/skills/
+```
+
+Type `$dartr-code` in a prompt to call it by name.
+
+**ChatGPT desktop app.** The repository is also a plugin (`plugin.json` at its
+root). Install it as a local plugin by following
+[OpenAI's instructions](https://developers.openai.com/plugins/build/plugins),
+section "Install a local plugin manually". ChatGPT on the web cannot install a
+plugin from a folder or a zip file: it takes plugins from its directory, where
+this one is not listed.
+
+In each case the assistant loads the skill when you ask for dartR code. Other
 assistants that read skills in this format (a folder with a `SKILL.md` file)
 can use the same folder.
 
@@ -66,12 +88,16 @@ build.
 
 ## Status
 
-Version 0.4.0, an early release. It has had one test, on version 0.3.0: six
-tasks, one run each, given to an assistant that could not run R, whose scripts
-were then run and checked. Scripts written with the skill passed 31 of 34
-checks; scripts written without it passed 13 of 34. One run per task is too few
-to say how much of that difference is chance, and the test has not been
-repeated on 0.4.0.
+Version 0.5.0, an early release. It has had one test, on version 0.3.0 with
+Claude: six tasks, one run each, given to an assistant that could not run R,
+whose scripts were then run and checked. Scripts written with the skill passed
+31 of 34 checks; scripts written without it passed 13 of 34. One run per task is
+too few to say how much of that difference is chance, and the test has not been
+repeated since.
+
+In Codex (CLI 0.153.0) the skill was confirmed to load and to be listed to the
+model. No task has been run with it in Codex, and it has not been installed in
+ChatGPT.
 
 Changes are listed in `NEWS.md`.
 

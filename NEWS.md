@@ -1,3 +1,27 @@
+# dartr-code 0.5.0 (11 November 2026)
+
+The one skill folder now serves Claude, Codex and the ChatGPT desktop app.
+
+- **Packaging.** `plugin.json` at the repository root makes the repository a
+  portable plugin, and `skills/dartr-code/agents/openai.yaml` gives Codex and
+  ChatGPT a display name and a default prompt. Neither file affects Claude.
+- **`SKILL.md`, working with and without R.** The lookup section now covers
+  three cases: R with the dartR packages, the static reference only, and
+  neither. It says that the skill's files sit beside `SKILL.md` and not in the
+  user's working directory, and that an R that is not the user's own may hold
+  other versions.
+- **`SKILL.md`, scope and reporting.** Do what was asked (a fix does not need a
+  pipeline), do not change the user's R library unless asked, and report which
+  code was run and which calls were only checked against the reference.
+- **Description.** Its opening words now name dartR, dartRverse and SNP data.
+  With 177 skills installed, Codex showed the model only the first 56
+  characters or so of each description.
+- **Corrections.** "Every `gl.*` function works on a genlight object" became
+  "most", because readers take files. The code under trap 10 is now valid R and
+  checks that the two columns exist.
+
+The reference files and the lookup script are unchanged.
+
 # dartr-code 0.4.0 (11 November 2026)
 
 Additions to `skills/dartr-code/references/traps.md`:

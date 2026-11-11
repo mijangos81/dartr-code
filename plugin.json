@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "dartr-code",
+  "version": "0.5.0",
+  "description": "Write, fix and review R code for the dartRverse population-genetics packages, using the exact signature of every function and the known traps that make dartR code run and return a wrong result.",
+  "homepage": "https://github.com/mijangos81/dartr-code",
+  "repository": "https://github.com/mijangos81/dartr-code",
+  "keywords": ["dartR", "dartRverse", "population genetics", "SNP", "DArT", "R"]
+}

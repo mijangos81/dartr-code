@@ -1,0 +1,4 @@
+interface:
+  display_name: "dartRverse Code"
+  short_description: "Write and review dartRverse R analyses"
+  default_prompt: "Use $dartr-code to write or review my dartRverse R code, checking function signatures and analysis traps."
