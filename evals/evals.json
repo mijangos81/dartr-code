@@ -1,0 +1,106 @@
+{
+  "skill_name": "dartr-code",
+  "evals": [
+    {
+      "id": 1,
+      "name": "dart-read-filter-pipeline",
+      "prompt": "I just got my DArTseq data back. The SNP report is evals/inputs/Report_DTest25-0001_SNP_2.csv and my sample sheet with populations and coordinates is evals/inputs/sample_sheet.csv. Can you write me an R script with dartR that reads it in and filters it in this order: reproducibility 0.99, call rate by locus 0.95, call rate by individual 0.90, remove monomorphic loci, keep one SNP per sequence tag, MAF 0.02. I'll run it on the cluster with Rscript so no plots please. Save the filtered object as filtered_gl.rds and a file filter_summary.csv with columns n_ind and n_loc for the final dataset.",
+      "expected_output": "analysis.R runs with the current dartRverse; filtered_gl.rds holds 249 individuals and about 19 loci; filter_summary.csv agrees.",
+      "files": [
+        "evals/inputs/Report_DTest25-0001_SNP_2.csv",
+        "evals/inputs/sample_sheet.csv"
+      ],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "filtered_gl.rds exists and holds a genlight object",
+        "Final dataset has 249 individuals (answer key)",
+        "Final dataset has 17 to 21 loci (answer key 19)",
+        "filter_summary.csv has n_ind and n_loc matching the saved object",
+        "No plots drawn, as the user asked (no Rplots.pdf left behind)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "migrate-old-dartr-script",
+      "prompt": "This script ran fine in 2023 but our lab has moved to the dartRverse and now it crashes. Can you update it so it runs with the current packages and still produces the same four output files (pca_scores.csv, dist.csv, basic_stats.csv, het.csv)? The script is at evals/inputs/old_platypus_analysis.R",
+      "expected_output": "analysis.R loads dartRverse, not dartR, runs without error and writes the four files; gl.basic.stats (absent from the dartRverse) is replaced by a function that exists.",
+      "files": [
+        "evals/inputs/old_platypus_analysis.R"
+      ],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "All four output files are written (pca_scores, dist, basic_stats, het)",
+        "pca_scores.csv has one row per individual (81)",
+        "dist.csv is a 3 x 3 population distance matrix",
+        "het.csv has one row per population (3)",
+        "basic_stats.csv is not empty"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "quiet-heterozygosity-figure",
+      "prompt": "For my thesis I need the heterozygosity-by-population bar plot that dartR makes. Use platypus.gl, the example dataset that comes with dartR, as a stand-in for my data. Save the figure as het_by_pop.png and the table as het_by_pop.csv. Keep the console quiet please, those functions print pages of text and I'm running this inside a larger pipeline.",
+      "expected_output": "het_by_pop.png is a real, non-blank figure and het_by_pop.csv has one row per population with Ho and He.",
+      "files": [],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "het_by_pop.png exists and is a real figure, not a blank image",
+        "het_by_pop.csv has one row per population (3) with Ho and He columns",
+        "Console stays quiet: at most 15 lines printed (R's own package-build warnings not counted)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "subset-relabel-fst",
+      "prompt": "I want pairwise FST (Weir & Cockerham) between three groups of platypus. evals/inputs/keep.csv lists the 30 animals to keep (column id) and the group each belongs to (column new_group). Starting from platypus.gl (the example dataset that comes with dartR), keep just those animals, set the groups as populations and write the pairwise FST matrix to fst.csv (square matrix, group names as row and column names).",
+      "expected_output": "fst.csv holds Weir & Cockerham FST of about 0.065, 0.081 and 0.052; labels assigned by position give values near zero.",
+      "files": [
+        "evals/inputs/keep.csv"
+      ],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "fst.csv is a 3 x 3 matrix labelled with the three group names",
+        "FST values match the answer key within 0.005 (0.065, 0.081, 0.052)"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "snps-per-chromosome",
+      "prompt": "I'd like to see how my SNPs are spread over the platypus genome. Using platypus.gl (the example dataset that comes with dartR), make a table with one row per chromosome: chromosome name, number of SNPs, and the first and last base-pair position of SNPs on it. Save as snps_per_chromosome.csv with columns chromosome, n_snps, first_bp, last_bp. Leave out SNPs that were not placed on a chromosome.",
+      "expected_output": "46 chromosomes or scaffolds; chromosome 1 has 83 SNPs spanning about 1.16 to 186 Mb. Positions taken from the position slot (0 to 68) are wrong.",
+      "files": [],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "snps_per_chromosome.csv has the four requested columns",
+        "Chromosome 1 (NC_041728.1) has 83 SNPs",
+        "Positions are genome coordinates: chromosome 1 spans 1,158,424 to 186,157,004",
+        "46 chromosomes or scaffolds listed and unplaced SNPs left out"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "single-population-summary",
+      "prompt": "I'm only writing up the Tenterfield platypus population. Subset platypus.gl (the example dataset that comes with dartR) to TENTERFIELD and give me a one-row file tenterfield_summary.csv with columns n_ind, n_loci_polymorphic and mean_locus_callrate for that subset. These go straight into my methods section.",
+      "expected_output": "n_ind 41, n_loci_polymorphic 575 (not 1000), mean call rate recalculated for the subset (about 0.95 over polymorphic loci).",
+      "files": [],
+      "assertions": [
+        "Script runs to completion in a fresh R session (exit code 0)",
+        "Loads the dartRverse and never the retired dartR package",
+        "n_ind is 41",
+        "n_loci_polymorphic is 575 (1,000 means monomorphic loci were not removed)",
+        "mean_locus_callrate is recalculated for the 41 individuals"
+      ]
+    }
+  ],
+  "notes": [
+    "Each task asks for a script, analysis.R. To grade it, run the script in a fresh R session and check its output files against the assertions; the answer-key values are written in the assertions. The grading script used in development is not part of this repository.",
+    "File paths in the prompts are relative to the root of this repository. Replace them with absolute paths before giving a prompt to an assistant, and tell it to read the input files from those paths.",
+    "Report_DTest25-0001_SNP_2.csv and sample_sheet.csv are copies of testset_SNPs_2Row.csv and testset_metadata.csv, the example files in the dartR.data package.",
+    "The prompts say that platypus.gl ships with dartR because, in the first test, two runs without the skill treated it as a file."
+  ]
+}
