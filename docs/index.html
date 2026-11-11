@@ -8,54 +8,100 @@
 <meta property="og:title" content="dartr-code">
 <meta property="og:description" content="Help your AI assistant check dartRverse function arguments and avoid known pitfalls before writing your code.">
 <meta property="og:type" content="website">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="favicon.png">
+<script>
+  // apply the theme the reader chose last time, before the page is painted
+  (function () {
+    var d = document.documentElement;
+    d.classList.add("js");
+    try {
+      var t = localStorage.getItem("dartr-code-theme");
+      if (t === "light" || t === "dark") d.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
+  /* The accent is the teal of the dartR wordmark; amber marks a pitfall. */
   :root {
-    --bg: #FAFBF9;
+    --bg: #F7F9F9;
     --card: #FFFFFF;
-    --ink: #1E2A24;
-    --muted: #55645B;
-    --accent: #1F7A4D;
-    --accent-ink: #16603B;
-    --accent-soft: #E3F0E8;
+    --ink: #1C2428;
+    --muted: #56646B;
+    --accent: #1F7F98;
+    --accent-ink: #14687E;
+    --accent-soft: #E0F0F4;
+    --on-accent: #FFFFFF;
     --trap: #8A560C;
     --trap-line: #C98A1E;
     --trap-soft: #FAF1DF;
-    --line: #D5E0D8;
-    --code-bg: #EFF4F0;
+    --line: #D6DEE1;
+    --code-bg: #EEF3F4;
+    --shadow: rgba(16, 24, 28, 0.2);
     /* one colour per package in the function tree; checked for colour-blind separation */
     --pk-base: #7C8A82;
     --pk-popgen: #2288F8;
-    --pk-spatial: #30A427;
+    --pk-spatial: #D44EA3;
     --pk-captive: #8E4208;
-    --pk-sexlinked: #D44EA3;
+    --pk-sexlinked: #30A427;
     --pk-sim: #6E34B3;
-    --pk-verse: #1E2A24;
+    --pk-verse: #1C2428;
+    color-scheme: light;
   }
+  /* Dark values. The two blocks below must stay identical: the first follows the
+     system setting, the second is the reader's own choice with the switch. */
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0F1512;
-      --card: #151D19;
-      --ink: #E6EEE9;
-      --muted: #9DB0A5;
-      --accent: #5CC08B;
-      --accent-ink: #7AD3A2;
-      --accent-soft: #16291F;
+    :root:not([data-theme="light"]) {
+      --bg: #0F1416;
+      --card: #161C1F;
+      --ink: #E6ECEE;
+      --muted: #9AABB2;
+      --accent: #78B7C5;
+      --accent-ink: #9CCFDA;
+      --accent-soft: #14272D;
+      --on-accent: #0F1416;
       --trap: #E7B45C;
       --trap-line: #C98A1E;
       --trap-soft: #2A2112;
-      --line: #26332C;
-      --code-bg: #111915;
+      --line: #263136;
+      --code-bg: #11181B;
+      --shadow: rgba(0, 0, 0, 0.5);
       --pk-base: #8C9B93;
       --pk-popgen: #268BFC;
-      --pk-spatial: #34A72B;
+      --pk-spatial: #D852A6;
       --pk-captive: #A24E10;
-      --pk-sexlinked: #D852A6;
+      --pk-sexlinked: #34A72B;
       --pk-sim: #7C44C3;
-      --pk-verse: #E6EEE9;
+      --pk-verse: #E6ECEE;
+      color-scheme: dark;
     }
+  }
+  :root[data-theme="dark"] {
+      --bg: #0F1416;
+      --card: #161C1F;
+      --ink: #E6ECEE;
+      --muted: #9AABB2;
+      --accent: #78B7C5;
+      --accent-ink: #9CCFDA;
+      --accent-soft: #14272D;
+      --on-accent: #0F1416;
+      --trap: #E7B45C;
+      --trap-line: #C98A1E;
+      --trap-soft: #2A2112;
+      --line: #263136;
+      --code-bg: #11181B;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --pk-base: #8C9B93;
+      --pk-popgen: #268BFC;
+      --pk-spatial: #D852A6;
+      --pk-captive: #A24E10;
+      --pk-sexlinked: #34A72B;
+      --pk-sim: #7C44C3;
+      --pk-verse: #E6ECEE;
+      color-scheme: dark;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -119,12 +165,26 @@
   header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .brand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: 1rem; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 9px; }
   .brand svg { width: 20px; height: 22px; flex: none; }
-  .top nav { display: flex; gap: 22px; font-size: 0.92rem; }
+  .top nav { display: flex; align-items: center; gap: 22px; font-size: 0.92rem; }
+  .theme { display: none; }
+  .js .theme { display: inline-flex; gap: 3px; }
+  .theme button {
+    font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+  }
+  .theme button:hover { color: var(--ink); border-color: var(--muted); }
+  .theme button[aria-pressed="true"] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
   .top nav a { color: var(--muted); text-decoration: none; }
   .top nav a:hover { color: var(--accent-ink); text-decoration: underline; }
 
-  .hero { padding: 40px 0 76px; }
-  .hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; }
+  .hero { padding: 30px 0 78px; overflow: hidden; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center; }
+  /* the seven package logos, drawn as cells of a honeycomb that runs on past the page edge */
+  .hero-art { position: relative; aspect-ratio: 2305 / 2224; }
+  .hero-art img { position: relative; display: block; width: 100%; height: auto; filter: drop-shadow(0 16px 26px var(--shadow)); }
+  .hero-art .comb { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .comb path { fill: none; stroke: var(--line); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .comb path.tint { fill: var(--accent-soft); stroke: none; }
   .hero h1 span { display: block; }
   .hero h1 .tone { color: var(--accent-ink); }
   .lede { font-size: 1.14rem; color: var(--muted); margin-top: 24px; max-width: 34em; }
@@ -134,11 +194,10 @@
     display: inline-block; text-decoration: none; font-weight: 600; font-size: 0.98rem;
     padding: 12px 20px; border-radius: 10px; border: 1.5px solid var(--accent);
   }
-  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
   .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
   .btn.ghost { color: var(--accent-ink); background: transparent; }
   .btn.ghost:hover { background: var(--accent-soft); }
-  @media (prefers-color-scheme: dark) { .btn.primary { color: #0F1512; } }
   .works { margin-top: 26px; font-size: 0.88rem; color: var(--muted); }
 
   /* the specimen: a call, what R reported, what happened, what the skill says */
@@ -151,6 +210,16 @@
   }
   .tabs button:hover { color: var(--ink); border-color: var(--muted); }
   .tabs button[aria-selected="true"] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+  .picks { display: grid; gap: 8px; margin-top: 26px; }
+  .picks button {
+    display: block; width: 100%; text-align: left; font: inherit; cursor: pointer; color: var(--muted);
+    background: transparent; border: 1px solid transparent; border-left: 3px solid var(--line); border-radius: 0 10px 10px 0; padding: 10px 14px;
+  }
+  .picks button b { display: block; font-weight: 600; color: var(--ink); }
+  .picks button span { display: block; font-size: 0.9rem; line-height: 1.45; margin-top: 2px; }
+  .picks button code { background: none; border: 0; padding: 0; font-size: 0.86em; }
+  .picks button:hover { border-left-color: var(--muted); }
+  .picks button[aria-selected="true"] { background: var(--card); border-color: var(--line); border-left-color: var(--accent); }
   .panel + .panel { margin-top: 26px; }
   .js .panel + .panel { margin-top: 0; }
   .panel[hidden] { display: none; }
@@ -170,6 +239,7 @@
   section.band { padding: 68px 0; border-top: 1px solid var(--line); }
   .intro { color: var(--muted); max-width: 40em; margin-top: 14px; font-size: 1.05rem; }
 
+  .wrap .pitfalls { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; }
   .gets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; margin-top: 38px; }
   .gets p { margin-top: 10px; color: var(--muted); font-size: 0.98rem; }
   .gets h3 { padding-top: 16px; border-top: 3px solid var(--accent); }
@@ -311,7 +381,8 @@
 
   @media (max-width: 900px) {
     .hero { padding: 20px 0 56px; }
-    .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .hero .wrap, .wrap .pitfalls { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .hero-art { order: -1; width: min(330px, 84%); margin: 0 auto; }
     .gets, footer .wrap { grid-template-columns: minmax(0, 1fr); gap: 26px; }
     section.band { padding: 52px 0; }
     .fstage { height: 520px; border-radius: 0; }
@@ -323,9 +394,14 @@
     body { font-size: 17px; }
     .wrap { padding: 0 16px; }
     .top nav a.hide-s { display: none; }
+    .top nav { gap: 14px; }
     .specimen { padding: 13px; }
     .note { grid-template-columns: minmax(0, 1fr); }
     .tree div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  }
+  /* on a wide screen the function tree is given more room than the text column */
+  @media (min-width: 1240px) {
+    .fmap { position: relative; left: 50%; width: min(1320px, 100vw - 96px); margin-left: calc(min(1320px, 100vw - 96px) / -2); }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
@@ -340,9 +416,14 @@
     </a>
     <nav aria-label="Page">
       <a class="hide-s" href="#gets">How it helps</a>
+      <a class="hide-s" href="#pitfalls">Pitfalls</a>
       <a class="hide-s" href="#functions">Functions</a>
       <a href="#install">Install</a>
-      <a href="https://github.com/mijangos81/dartr-code">GitHub</a>
+      <a class="hide-s" href="https://github.com/mijangos81/dartr-code">GitHub</a>
+      <div class="theme" role="group" aria-label="Colour theme">
+        <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false">Dark</button>
+      </div>
     </nav>
   </div>
 </header>
@@ -361,63 +442,22 @@
       <p class="works">For Claude Code, Codex and the ChatGPT desktop app.</p>
     </div>
 
-    <div class="specimen" id="specimen">
-      <p class="rule"># ---- four pitfalls it covers ----</p>
-      <div class="tabs" role="tablist" aria-label="Examples">
-        <button role="tab" id="t-read" aria-controls="p-read" aria-selected="true">Samples dropped</button>
-        <button role="tab" id="t-labels" aria-controls="p-labels" aria-selected="false" tabindex="-1">Labels shifted</button>
-        <button role="tab" id="t-stale" aria-controls="p-stale" aria-selected="false" tabindex="-1">Stale loci</button>
-        <button role="tab" id="t-name" aria-controls="p-name" aria-selected="false" tabindex="-1">Invented argument</button>
-      </div>
-
-      <div class="panel" role="tabpanel" id="p-read" aria-labelledby="t-read">
-<pre><code>x &lt;- gl.read.dart("Report_SNP.csv",
-                  <span class="t">ind.metafile = "samples.csv"</span>,
-                  verbose = 0)
-nInd(x)
-<span class="o">#&gt; [1] 240</span></code></pre>
-        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>The report contains 250 samples, but ten had no row in <code>samples.csv</code> and were excluded. At the default verbosity, R mentions this in the log. With <code>verbose = 0</code>, it says nothing.</span></div>
-        <div class="note fix"><span class="k">The skill says</span><span>Give every sample a row, then compare <code>nInd(x)</code> with the number of samples you sent.</span></div>
-      </div>
-
-      <div class="panel" role="tabpanel" id="p-labels" aria-labelledby="t-labels">
-<pre><code>keep &lt;- read.csv("keep.csv")        <span class="o"># columns: id, new_group</span>
-x &lt;- gl.keep.ind(platypus.gl, ind.list = keep$id)
-<span class="t">pop(x) &lt;- keep$new_group</span>
-gl.fst.pop(x)
-<span class="o"># pairwise FST came out as 0.004, -0.011 and -0.017</span></code></pre>
-        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span><code>gl.keep.ind()</code> keeps individuals in the object's original order. Assigning labels in the list's order put 21 of the 30 animals in the wrong group. FST values that were between 0.052 and 0.081 fell to around zero.</span></div>
-        <div class="note fix"><span class="k">The skill says</span><span>Assign by name: <code>pop(x) &lt;- keep$new_group[match(indNames(x), keep$id)]</code></span></div>
-      </div>
-
-      <div class="panel" role="tabpanel" id="p-stale" aria-labelledby="t-stale">
-<pre><code>x &lt;- <span class="t">gl.keep.pop(platypus.gl, pop.list = "TENTERFIELD")</span>
-nLoc(x)
-<span class="o">#&gt; [1] 1000</span></code></pre>
-        <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>Among the 41 retained animals, 425 of the 1,000 loci are monomorphic or entirely missing. The values in <code>loc.metrics$CallRate</code> still describe the original 81 animals.</span></div>
-        <div class="note fix"><span class="k">The skill says</span><span>Add <code>recalc = TRUE, mono.rm = TRUE</code>. That leaves 575 loci with their statistics recalculated.</span></div>
-      </div>
-
-      <div class="panel" role="tabpanel" id="p-name" aria-labelledby="t-name">
-<pre><code>pc &lt;- gl.pcoa(x, <span class="t">plot.display = FALSE</span>)
-<span class="o">#&gt; Error in gl.pcoa(x, plot.display = FALSE) :
-#&gt;   unused argument (plot.display = FALSE)</span></code></pre>
-        <div class="note said"><span class="k">R reported</span><span>The argument is rejected, but the error doesn't give the correct name.</span></div>
-        <div class="note trap"><span class="k">What happened</span><span>Most dartRverse functions use <code>plot.display</code>, while <code>gl.pcoa()</code> uses <code>plot.out</code>. The assistant assumed they used the same name.</span></div>
-        <div class="note fix"><span class="k">The skill says</span><span>Check the function's arguments first: <code>gl.pcoa(x, plot.out = FALSE)</code></span></div>
-      </div>
-
-      <p class="measured">These examples were tested with dartR.base 1.2.6 and the data included in dartR.data.</p>
+    <div class="hero-art">
+      <svg class="comb" viewBox="0 0 2305 2224" aria-hidden="true" focusable="false">
+        <path d="M2305,19L2676,233L2676,661L2305,875L1934,661L1934,233Z"/>
+        <path class="tint" d="M2689,684L3060,898L3060,1326L2689,1540L2319,1326L2319,898Z"/>
+        <path d="M2305,1349L2676,1563L2676,1991L2305,2205L1934,1991L1934,1563Z"/>
+        <path d="M3073,19L3444,233L3444,661L3073,875L2703,661L2703,233Z"/>
+        <path d="M3073,1349L3444,1563L3444,1991L3073,2205L2703,1991L2703,1563Z"/>
+      </svg>
+      <img src="dartRverse-hexes.webp" srcset="dartRverse-hexes-640.webp 640w, dartRverse-hexes.webp 1280w" sizes="(max-width: 900px) 330px, 560px" width="1280" height="1235" alt="The seven dartRverse hexagon logos: data, sim, popgen, base, spatial, sexlinked and captive.">
     </div>
   </div>
 </div>
 
 <section class="band" id="gets">
   <div class="wrap">
-    <p class="rule"># ---- what the assistant gets ----</p>
+    <p class="rule"># ---- how it helps ----</p>
     <h2>What the assistant can check</h2>
     <div class="gets">
       <div>
@@ -431,6 +471,67 @@ nLoc(x)
       <div>
         <h3>Version differences</h3>
         <p>Some functions behave differently in CRAN releases and development versions. The skill documents bugs fixed in development and tells the assistant to check which version you're using.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="pitfalls">
+  <div class="wrap">
+    <p class="rule"># ---- pitfalls ----</p>
+    <div class="pitfalls">
+      <div>
+        <h2>Four pitfalls it covers</h2>
+        <p class="intro">Each example is a call an assistant wrote. It shows what R reported, what had happened, and what the skill tells the assistant to do.</p>
+        <div class="picks" role="tablist" aria-label="Examples" aria-orientation="vertical">
+          <button role="tab" id="t-read" aria-controls="p-read" aria-selected="true"><b>Samples dropped</b><span><code>gl.read.dart()</code> leaves out samples that have no row in the metadata file.</span></button>
+          <button role="tab" id="t-labels" aria-controls="p-labels" aria-selected="false" tabindex="-1"><b>Labels shifted</b><span><code>gl.keep.ind()</code> does not return individuals in the order of your list.</span></button>
+          <button role="tab" id="t-stale" aria-controls="p-stale" aria-selected="false" tabindex="-1"><b>Stale loci</b><span>After subsetting, monomorphic loci and old statistics stay in the object.</span></button>
+          <button role="tab" id="t-name" aria-controls="p-name" aria-selected="false" tabindex="-1"><b>Invented argument</b><span><code>gl.pcoa()</code> takes <code>plot.out</code>, not <code>plot.display</code>.</span></button>
+        </div>
+      </div>
+      <div class="specimen" id="specimen">
+        <div class="panel" role="tabpanel" id="p-read" aria-labelledby="t-read">
+<pre><code>x &lt;- gl.read.dart("Report_SNP.csv",
+                  <span class="t">ind.metafile = "samples.csv"</span>,
+                  verbose = 0)
+nInd(x)
+<span class="o">#&gt; [1] 240</span></code></pre>
+          <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+          <div class="note trap"><span class="k">What happened</span><span>The report contains 250 samples, but ten had no row in <code>samples.csv</code> and were excluded. At the default verbosity, R mentions this in the log. With <code>verbose = 0</code>, it says nothing.</span></div>
+          <div class="note fix"><span class="k">The skill says</span><span>Give every sample a row, then compare <code>nInd(x)</code> with the number of samples you sent.</span></div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-labels" aria-labelledby="t-labels">
+<pre><code>keep &lt;- read.csv("keep.csv")        <span class="o"># columns: id, new_group</span>
+x &lt;- gl.keep.ind(platypus.gl, ind.list = keep$id)
+<span class="t">pop(x) &lt;- keep$new_group</span>
+gl.fst.pop(x)
+<span class="o"># pairwise FST came out as 0.004, -0.011 and -0.017</span></code></pre>
+          <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+          <div class="note trap"><span class="k">What happened</span><span><code>gl.keep.ind()</code> keeps individuals in the object's original order. Assigning labels in the list's order put 21 of the 30 animals in the wrong group. FST values that were between 0.052 and 0.081 fell to around zero.</span></div>
+          <div class="note fix"><span class="k">The skill says</span><span>Assign by name: <code>pop(x) &lt;- keep$new_group[match(indNames(x), keep$id)]</code></span></div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-stale" aria-labelledby="t-stale">
+<pre><code>x &lt;- <span class="t">gl.keep.pop(platypus.gl, pop.list = "TENTERFIELD")</span>
+nLoc(x)
+<span class="o">#&gt; [1] 1000</span></code></pre>
+          <div class="note said"><span class="k">R reported</span><span>No error and no warning.</span></div>
+          <div class="note trap"><span class="k">What happened</span><span>Among the 41 retained animals, 425 of the 1,000 loci are monomorphic or entirely missing. The values in <code>loc.metrics$CallRate</code> still describe the original 81 animals.</span></div>
+          <div class="note fix"><span class="k">The skill says</span><span>Add <code>recalc = TRUE, mono.rm = TRUE</code>. That leaves 575 loci with their statistics recalculated.</span></div>
+        </div>
+
+        <div class="panel" role="tabpanel" id="p-name" aria-labelledby="t-name">
+<pre><code>pc &lt;- gl.pcoa(x, <span class="t">plot.display = FALSE</span>)
+<span class="o">#&gt; Error in gl.pcoa(x, plot.display = FALSE) :
+#&gt;   unused argument (plot.display = FALSE)</span></code></pre>
+          <div class="note said"><span class="k">R reported</span><span>The argument is rejected, but the error doesn't give the correct name.</span></div>
+          <div class="note trap"><span class="k">What happened</span><span>Most dartRverse functions use <code>plot.display</code>, while <code>gl.pcoa()</code> uses <code>plot.out</code>. The assistant assumed they used the same name.</span></div>
+          <div class="note fix"><span class="k">The skill says</span><span>Check the function's arguments first: <code>gl.pcoa(x, plot.out = FALSE)</code></span></div>
+        </div>
+
+        <p class="measured">These examples were tested with dartR.base 1.2.6 and the data included in dartR.data.</p>
       </div>
     </div>
   </div>
@@ -560,6 +661,27 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
 (function () {
   document.documentElement.classList.add("js");
 
+  // theme switch: follow the system until the reader picks a theme, then remember the choice
+  (function () {
+    var d = document.documentElement;
+    var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    var btns = Array.prototype.slice.call(document.querySelectorAll("[data-theme-set]"));
+    function show() {
+      var now = d.getAttribute("data-theme") || (mq && mq.matches ? "dark" : "light");
+      btns.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-theme-set") === now ? "true" : "false"); });
+    }
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = b.getAttribute("data-theme-set");
+        d.setAttribute("data-theme", t);
+        try { localStorage.setItem("dartr-code-theme", t); } catch (e) {}
+        show();
+      });
+    });
+    if (mq && mq.addEventListener) mq.addEventListener("change", show);
+    show();
+  })();
+
   // tabs: the two tab lists on the page share this code
   document.querySelectorAll('[role="tablist"]').forEach(function (list) {
     var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
@@ -575,7 +697,7 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
     tabs.forEach(function (t, i) {
       t.addEventListener("click", function () { select(t, false); });
       t.addEventListener("keydown", function (e) {
-        var j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : null;
+        var j = e.key === "ArrowRight" || e.key === "ArrowDown" ? i + 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : null;
         if (j === null) return;
         e.preventDefault();
         select(tabs[(j + tabs.length) % tabs.length], true);
