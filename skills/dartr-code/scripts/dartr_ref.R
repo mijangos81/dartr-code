@@ -59,6 +59,69 @@ signature_of <- function(name, fn) {
   paste0(name, "(", paste(parts, collapse = ", "), ")")
 }
 
+# ---- data type accepted by the input check ----------------------------------
+# Most gl.* functions pass their genlight to utils.check.datatype(), which stops
+# when the data type is not in `accept`. Those calls are read from the function
+# body and tried on the SNP and SilicoDArT example objects of dartR.data, so the
+# answer is the one the installed version gives. Only the exclusive cases are
+# reported ("SNP only", "SilicoDArT only"): a function that passes both types at
+# the check can still stop later, so nothing is claimed for it. "" also when the
+# function has no such check or its checks disagree.
+datatype_calls <- function(e, acc = list()) {
+  if (is.call(e)) {
+    fn <- e[[1]]
+    nm <- if (is.name(fn)) as.character(fn)
+          else if (is.call(fn) && length(fn) == 3 && as.character(fn[[1]])[1] %in% c("::", ":::")) as.character(fn[[3]])
+          else ""
+    if (identical(nm, "utils.check.datatype")) acc[[length(acc) + 1]] <- e
+  }
+  if (is.call(e) || is.pairlist(e) || is.expression(e))
+    for (i in seq_along(e)) {
+      if (identical(e[[i]], quote(expr = ))) next   # empty argument, as in x[i, ]
+      acc <- datatype_calls(e[[i]], acc)
+    }
+  acc
+}
+.datatype_cache <- new.env()
+datatype_pass <- function(accept) {   # character vector, or NULL for the function's default
+  key <- if (is.null(accept)) "<default>" else paste(sort(accept), collapse = "+")
+  if (!is.null(.datatype_cache[[key]])) return(.datatype_cache[[key]])
+  chk <- getExportedValue("dartR.base", "utils.check.datatype")
+  one <- function(obj) tryCatch({
+    quiet(utils::capture.output(
+      if (is.null(accept)) chk(obj, verbose = 0) else chk(obj, accept = accept, verbose = 0)))
+    TRUE
+  }, error = function(e) FALSE)
+  res <- c(SNP = one(getExportedValue("dartR.data", "testset.gl")),
+           SilicoDArT = one(getExportedValue("dartR.data", "testset.gs")))
+  .datatype_cache[[key]] <- res
+  res
+}
+datatype_of <- function(fn) {
+  if (!quiet(requireNamespace("dartR.base", quietly = TRUE)) ||
+      !quiet(requireNamespace("dartR.data", quietly = TRUE))) return("")
+  tryCatch({
+    calls <- datatype_calls(body(fn))
+    if (!length(calls)) return("")
+    chk <- getExportedValue("dartR.base", "utils.check.datatype")
+    res <- lapply(calls, function(cl) {
+      a <- match.call(chk, cl)$accept
+      v <- if (is.null(a)) NULL else eval(a, baseenv())
+      if (!is.null(v) && !is.character(v)) stop("accept is not a literal")
+      datatype_pass(v)
+    })
+    res <- res[vapply(res, any, logical(1))]   # drop checks that take no genlight (dist, matrix, ...)
+    if (!length(res)) return("")
+    res <- unique(lapply(res, function(r) names(r)[r]))
+    if (length(res) != 1) return("")
+    if (identical(res[[1]], "SNP")) "SNP only"
+    else if (identical(res[[1]], "SilicoDArT")) "SilicoDArT only"
+    else ""
+  }, error = function(e) "")
+}
+DATATYPE_NOTE <- c("SNP only" = "A SilicoDArT object stops at the input check.",
+                   "SilicoDArT only" = "A SNP object stops at the input check.")
+
 catalogue <- function(pkgs = installed()) {
   out <- list()
   for (p in pkgs) {
@@ -85,6 +148,7 @@ catalogue <- function(pkgs = installed()) {
         value = if (is.null(rd)) "" else rd_section(rd, "\\value"),
         details = if (is.null(rd)) "" else rd_section(rd, "\\details"),
         args = names(formals(fn)), docs = docs,
+        datatype = datatype_of(fn),
         internal = "internal" %in% kw,
         deprecated = grepl("deprecat", paste(title, descr), ignore.case = TRUE),
         documented = !is.null(rd))
@@ -144,6 +208,8 @@ entry_md <- function(e, clip_arg = 260, clip_val = 320) {
     d <- e$docs[[a]]
     lines <- c(lines, paste0("- `", a, "`: ", if (is.null(d)) "(not documented in the help page)" else clip(d, clip_arg)))
   }
+  if (nzchar(e$datatype))
+    lines <- c(lines, paste0("- **Data:** ", e$datatype, ". ", DATATYPE_NOTE[[e$datatype]]))
   if (nzchar(e$value)) lines <- c(lines, paste0("- **Returns:** ", clip(e$value, clip_val)))
   c(lines, "")
 }
@@ -168,6 +234,7 @@ build <- function(dir) {
     out <- c(paste0("# ", pk, " — ", sub("[.]md$", "", sub("^base-", "", f)), " (", length(es), " functions)"), "",
              FILE_BLURB[[f]], "", stamp, "",
              "Each function is a `### name` heading: search for the heading and read that block instead of the whole file.", "",
+             "A **Data** line marks a function whose input check accepts only one of the two data types, SNP or SilicoDArT (presence/absence). A function without that line is not shown to accept both: it passes both at the check, or has no check, and can still stop later, so read its help text before using it on presence/absence data.", "",
              "**Contents:** ", paste(vapply(es, function(e) e$name, character(1)), collapse = ", "), "",
              common_md, "## Functions", "",
              unlist(lapply(es, entry_md)))
@@ -175,12 +242,14 @@ build <- function(dir) {
   }
   # index
   idx <- c("# dartRverse function index", "", stamp, "",
-           "One line per exported function. Find the function here, then open the file named in the heading and read its `### name` block for the exact signature and arguments.", "")
+           "One line per exported function. Find the function here, then open the file named in the heading and read its `### name` block for the exact signature and arguments.", "",
+           "**[SNP only]** marks a function that stops when it is given SilicoDArT (presence/absence) data, and **[SilicoDArT only]** the reverse. No mark does not mean that both are supported; see the function's block.", "")
   for (f in unique(files)) {
     es <- cat_all[files == f]
     idx <- c(idx, paste0("## ", es[[1]]$pkg, " — `", f, "`"), "", FILE_BLURB[[f]], "",
              vapply(es, function(e) paste0("- `", e$name, "` — ", clip(e$title, 110),
-                                           if (e$deprecated) " **[deprecated]**" else ""), character(1)), "")
+                                           if (e$deprecated) " **[deprecated]**" else "",
+                                           if (nzchar(e$datatype)) paste0(" **[", e$datatype, "]**") else ""), character(1)), "")
   }
   writeLines(idx, file.path(dir, "index.md"), useBytes = TRUE)
   # QA: arguments in formals but not in the help page, and the reverse
@@ -261,6 +330,7 @@ help_cmd <- function(names) {
           if (e$deprecated) "  [DEPRECATED]" else "", "\n", sep = "")
       cat(e$title, "\n\n", signature_of(e$name, e$fn), "\n\n", sep = "")
       for (a in e$args) cat("  ", a, ": ", if (is.null(e$docs[[a]])) "(not documented)" else e$docs[[a]], "\n", sep = "")
+      if (nzchar(e$datatype)) cat("\nData: ", e$datatype, ". ", DATATYPE_NOTE[[e$datatype]], "\n", sep = "")
       if (nzchar(e$value)) cat("\nReturns: ", e$value, "\n", sep = "")
       if (nzchar(e$details)) cat("\nDetails: ", clip(e$details, 1800), "\n", sep = "")
     }
