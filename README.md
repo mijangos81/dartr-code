@@ -5,7 +5,8 @@ A skill that helps an AI coding assistant write correct R code for the
 population-genetics packages: dartR.base, dartR.popgen, dartR.spatial,
 dartR.captive, dartR.sexlinked and dartR.sim.
 
-Website, with four worked examples: <https://mijangos81.github.io/dartr-code/>
+Website, with four worked examples and a tree of all 263 functions sorted by
+the job they do: <https://mijangos81.github.io/dartr-code/>
 
 A skill is a folder of instructions and reference files that the assistant
 loads when a task calls for it. This one targets the two ways dartR code goes
@@ -28,6 +29,7 @@ wrong when an assistant writes it from memory:
 | `skills/dartr-code/references/` | The same function reference as static files, for assistants that cannot run R; the full list of traps; what changed from the old `dartR`; and a map of the ebook and workshop tutorials |
 | `plugin.json`, `skills/dartr-code/agents/openai.yaml` | Packaging for Codex and the ChatGPT desktop app |
 | `evals/` | Six test tasks and their input files |
+| `docs/` | The website. `function-groups.csv` gives each function its group in the function tree |
 
 ## Install
 
@@ -88,6 +90,16 @@ Rscript skills/dartr-code/scripts/dartr_ref.R build skills/dartr-code/references
 `traps.md` and `resources.md` are written by hand and are not touched by the
 build.
 
+The function tree on the website reads `docs/functions.js`. Rebuild that file
+after regenerating the reference:
+
+```bash
+Rscript docs/build-functions.R
+```
+
+The script stops and names any function that has no row in
+`docs/function-groups.csv`. Add the row there to give a new function its group.
+
 ## Status
 
 Version 0.5.0, an early release. It has had one test, on version 0.3.0 with
@@ -116,4 +128,6 @@ Open an issue in this repository, or post to the
 GPL-3; see `LICENSE`. The function descriptions are taken from the help pages
 of the dartRverse packages, which are licensed GPL (>= 3). Two files in
 `evals/inputs/`, `Report_DTest25-0001_SNP_2.csv` and `sample_sheet.csv`, are
-copies of the example files in the dartR.data package.
+copies of the example files in the dartR.data package. The website loads the
+D3 library (ISC licence) from a CDN to draw the function tree; no copy of it is
+kept in this repository.

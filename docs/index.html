@@ -26,6 +26,14 @@
     --line: #D5E0D8;
     --code-bg: #EFF4F0;
     --empty: #DCE5DF;
+    /* one colour per package in the function tree; checked for colour-blind separation */
+    --pk-base: #7C8A82;
+    --pk-popgen: #2288F8;
+    --pk-spatial: #30A427;
+    --pk-captive: #8E4208;
+    --pk-sexlinked: #D44EA3;
+    --pk-sim: #6E34B3;
+    --pk-verse: #1E2A24;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -42,6 +50,13 @@
       --line: #26332C;
       --code-bg: #111915;
       --empty: #26332C;
+      --pk-base: #8C9B93;
+      --pk-popgen: #268BFC;
+      --pk-spatial: #34A72B;
+      --pk-captive: #A24E10;
+      --pk-sexlinked: #D852A6;
+      --pk-sim: #7C44C3;
+      --pk-verse: #E6EEE9;
     }
   }
   * { box-sizing: border-box; }
@@ -190,6 +205,120 @@
   .tree .path { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.84rem; padding-top: 0.15em; overflow-wrap: anywhere; }
   .tree .what { color: var(--muted); }
 
+  /* the function tree: search and view switch, package legend, then the tree or the list */
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .fmap { margin-top: 30px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+  .fmap:not(.ready) .fmap-bar, .fmap:not(.ready) .flegend, .fmap:not(.ready) .fbody { display: none; }
+  .fmap.ready .ffallback { display: none; }
+  .ffallback { padding: 18px; color: var(--muted); font-size: 0.95rem; }
+  .fmap-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .fsearch { position: relative; flex: 1 1 240px; max-width: 400px; }
+  .fsearch input {
+    width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px;
+  }
+  .fsearch input::placeholder { color: var(--muted); }
+  .fhits {
+    position: absolute; z-index: 6; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+    max-height: 320px; overflow: auto;
+  }
+  .fhits li { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 6px 9px; border-radius: 7px; font-size: 0.82rem; color: var(--muted); }
+  .fhits li[role="option"] { cursor: pointer; }
+  .fhits li[role="option"]:hover, .fhits li[aria-selected="true"] { background: var(--accent-soft); }
+  .fhits li span { white-space: nowrap; }
+  .fhits code, .frow code { background: none; border: 0; padding: 0; color: var(--ink); }
+  .fview { display: inline-flex; gap: 4px; margin-left: auto; }
+  .fview button, .flegend button, .fctl button, .fn-close {
+    font: inherit; font-size: 0.84rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px;
+  }
+  .fview button:hover, .flegend button:hover, .fctl button:hover, .fn-close:hover { color: var(--ink); border-color: var(--muted); }
+  .fview button[aria-pressed="true"] { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+  .fview button:disabled { opacity: 0.45; cursor: default; }
+  .flegend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .flegend .k { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: var(--muted); margin-right: 6px; }
+  .flegend button { display: inline-flex; align-items: center; gap: 7px; font-weight: 400; font-size: 0.82rem; padding: 4px 11px; color: var(--ink); }
+  .flegend button .n { color: var(--muted); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.76rem; }
+  .flegend button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  .fn-dot { display: inline-block; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--pk); }
+  .pk-base { --pk: var(--pk-base); } .pk-popgen { --pk: var(--pk-popgen); } .pk-spatial { --pk: var(--pk-spatial); }
+  .pk-captive { --pk: var(--pk-captive); } .pk-sexlinked { --pk: var(--pk-sexlinked); } .pk-sim { --pk: var(--pk-sim); }
+  .pk-verse { --pk: var(--pk-verse); }
+
+  .fbody { position: relative; }
+  .fstage { position: relative; height: 640px; overflow: hidden; border-radius: 0 0 16px 16px; }
+  .fstage svg { display: block; width: 100%; height: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .fstage svg:active { cursor: grabbing; }
+  .fstage svg :focus { outline: none; }
+  .sk-link { stroke: var(--muted); stroke-opacity: 0.4; stroke-width: 1.5; }
+  .leaf-link { fill: none; stroke: var(--muted); stroke-opacity: 0.4; stroke-width: 1; }
+  .rootn, .stage, .hub, .leaf { cursor: pointer; }
+  .rootn path { fill: var(--ink); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; }
+  .rootn text { fill: var(--bg); font: 600 12.5px "IBM Plex Mono", ui-monospace, monospace; text-anchor: middle; }
+  .stage circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+  .stage text { fill: var(--accent-ink); font: 700 14px "Bricolage Grotesque", "IBM Plex Sans", sans-serif; text-anchor: middle; }
+  .hub .core { fill: var(--card); }
+  .arc { fill: var(--pk); stroke: var(--card); stroke-width: 1; }
+  .hub .count { fill: var(--ink); font: 600 11.5px "IBM Plex Mono", ui-monospace, monospace; text-anchor: middle; }
+  .hub .label { fill: var(--ink); font: 600 13px "IBM Plex Sans", sans-serif; text-anchor: middle; paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  .grp.open .hub .label { fill: var(--accent-ink); }
+  .hub:hover .core, .stage:hover circle { fill: var(--accent-soft); }
+  .leaf rect { fill: var(--card); stroke: var(--line); stroke-width: 1; }
+  .leaf .dot { fill: var(--pk); }
+  .leaf text { fill: var(--ink); font: 12px "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  .leaf:hover rect { stroke: var(--muted); }
+  .leaf.also rect { stroke-dasharray: 4 3; stroke: var(--muted); }
+  .leaf.dep text { text-decoration: line-through; fill: var(--muted); }
+  .leaf.sel rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: none; }
+  .rootn:focus-visible path, .stage:focus-visible circle, .hub:focus-visible .core, .leaf:focus-visible rect { stroke: var(--accent); stroke-width: 2.5; }
+  .fstage .dim { opacity: 0.18; }
+  .fctl { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; }
+  .fctl button { padding: 5px 12px; }
+  .fhint { position: absolute; right: 12px; bottom: 14px; font-size: 0.78rem; color: var(--muted); background: var(--card); border-radius: 6px; padding: 2px 8px; pointer-events: none; }
+  .ftip {
+    position: absolute; z-index: 4; max-width: 300px; pointer-events: none;
+    background: var(--ink); color: var(--bg); border-radius: 8px; padding: 7px 10px; font-size: 0.8rem; line-height: 1.4;
+  }
+  .ftip b { display: block; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; }
+
+  .fdetail {
+    position: absolute; z-index: 5; top: 12px; right: 12px; width: 336px; max-height: calc(100% - 24px); overflow: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  }
+  .fdetail[hidden] { display: none; }
+  .fn-close { float: right; margin: -4px -4px 6px 10px; font-size: 0.76rem; padding: 3px 10px; }
+  .fn-name { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1.02rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+  .fn-meta { display: flex; flex-wrap: wrap; gap: 3px 12px; margin-top: 8px; font-size: 0.8rem; color: var(--muted); }
+  .fn-pk { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+  .fn-chips { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .fn-chip { font-size: 0.74rem; font-weight: 600; color: var(--trap); background: var(--trap-soft); border-radius: 999px; padding: 2px 10px; }
+  .fn-title { margin-top: 12px; font-size: 0.92rem; line-height: 1.5; }
+  .fn-card .codebox { margin-top: 12px; }
+  .fn-card pre { font-size: 0.74rem; line-height: 1.55; padding: 11px 12px 34px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .fn-card .copy { top: auto; right: 7px; bottom: 7px; }
+  .fn-more { display: inline-block; margin-top: 12px; font-size: 0.88rem; }
+
+  .flist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 34px; padding: 6px 18px 18px; }
+  .flist[hidden] { display: none; }
+  .flist h3 { font-size: 1.05rem; padding: 16px 0 10px; }
+  .fgroup { border-top: 1px solid var(--line); }
+  .fgroup > summary { display: flex; align-items: baseline; gap: 10px; padding: 10px 2px; cursor: pointer; font-weight: 600; font-size: 0.97rem; list-style: none; }
+  .fgroup > summary::-webkit-details-marker { display: none; }
+  .fgroup > summary::before { content: "+"; flex: none; width: 0.7em; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 400; color: var(--muted); }
+  .fgroup[open] > summary::before { content: "\2212"; }
+  .fgroup > summary .n { margin-left: auto; color: var(--muted); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.82rem; font-weight: 400; }
+  .fgroup ul { list-style: none; margin: 0 0 10px; padding: 0; }
+  .frow > summary { display: flex; align-items: baseline; gap: 9px; padding: 4px 2px; cursor: pointer; list-style: none; font-size: 0.86rem; }
+  .frow > summary::-webkit-details-marker { display: none; }
+  .frow > summary .fn-dot { align-self: center; }
+  .frow > summary code { font-size: 0.82rem; white-space: nowrap; }
+  .frow > summary code.dep { text-decoration: line-through; color: var(--muted); }
+  .frow > summary .t { color: var(--muted); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .frow[open] > summary .t { visibility: hidden; }
+  .frow .fn-card { margin: 2px 0 12px 18px; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 0 10px 10px 0; }
+  .frow .fn-meta { margin-top: 0; }
+
   footer { border-top: 1px solid var(--line); padding: 44px 0 64px; font-size: 0.93rem; color: var(--muted); }
   footer .wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px; }
   footer h3 { font-size: 1rem; color: var(--ink); margin-bottom: 8px; }
@@ -199,6 +328,10 @@
     .hero .wrap, .evidence { grid-template-columns: minmax(0, 1fr); gap: 36px; }
     .gets, footer .wrap { grid-template-columns: minmax(0, 1fr); gap: 26px; }
     section.band { padding: 52px 0; }
+    .fstage { height: 520px; border-radius: 0; }
+    .fhint { display: none; }
+    .fdetail { position: static; width: auto; max-height: none; border-width: 1px 0 0; border-radius: 0 0 16px 16px; box-shadow: none; }
+    .flist { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 560px) {
     body { font-size: 17px; }
@@ -221,6 +354,7 @@
     </a>
     <nav aria-label="Page">
       <a class="hide-s" href="#gets">What it gives</a>
+      <a class="hide-s" href="#functions">Functions</a>
       <a href="#install">Install</a>
       <a class="hide-s" href="#evidence">Evidence</a>
       <a href="https://github.com/mijangos81/dartr-code">GitHub</a>
@@ -314,6 +448,46 @@ nLoc(x)
         <p>The CRAN releases and the development branches differ. The skill lists the functions that give a wrong result on CRAN and are corrected in development, and tells the assistant to ask which version you have.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="band" id="functions">
+  <div class="wrap">
+    <p class="rule"># ---- every function ----</p>
+    <h2>Every function, sorted by the job it does</h2>
+    <p class="intro">This is the reference the skill carries, drawn as a tree. Open a group to see its functions, then pick one to read its signature. The dot beside a function shows its package.</p>
+
+    <div class="fmap" id="fn-map">
+      <p class="ffallback">The tree needs JavaScript and did not load. The same functions are listed in the <a href="https://github.com/mijangos81/dartr-code/blob/main/skills/dartr-code/references/index.md">function index</a> on GitHub.</p>
+      <div class="fmap-bar">
+        <div class="fsearch">
+          <label class="sr" for="fn-q">Find a function</label>
+          <input id="fn-q" type="search" placeholder="Find a function, for example fst" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="fn-hits" aria-autocomplete="list">
+          <ul id="fn-hits" class="fhits" role="listbox" aria-label="Matching functions" hidden></ul>
+        </div>
+        <div class="fview" role="group" aria-label="Show as">
+          <button type="button" data-view="tree" aria-pressed="false">Tree</button>
+          <button type="button" data-view="list" aria-pressed="false">List</button>
+        </div>
+      </div>
+      <div class="flegend" id="fn-legend" role="group" aria-label="Show one package"><span class="k">Package</span></div>
+      <div class="fbody">
+        <div class="fstage" id="fn-stage" hidden>
+          <svg id="fn-svg" role="group" aria-label="Tree of dartRverse functions"></svg>
+          <div class="fctl">
+            <button type="button" id="fn-in" aria-label="Zoom in">+</button>
+            <button type="button" id="fn-out" aria-label="Zoom out">&minus;</button>
+            <button type="button" id="fn-fit">Fit</button>
+            <button type="button" id="fn-all">Open all</button>
+          </div>
+          <p class="fhint">Drag to move. Pinch, or hold Ctrl and scroll, to zoom.</p>
+          <div class="ftip" id="fn-tip" hidden></div>
+        </div>
+        <aside class="fdetail" id="fn-detail" aria-label="Selected function" hidden></aside>
+        <div class="flist" id="fn-list" hidden></div>
+      </div>
+    </div>
+    <p class="measured" id="fn-caption">263 functions in 19 groups, read from the development branches of the packages.</p>
   </div>
 </section>
 
@@ -448,20 +622,20 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
     select(tabs[0], false);
   });
 
-  // copy buttons
-  document.querySelectorAll(".copy").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var text = b.parentNode.querySelector("pre").innerText;
-      var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600); };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done, function () {});
-      } else {
-        var ta = document.createElement("textarea");
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try { document.execCommand("copy"); done(); } catch (err) {}
-        document.body.removeChild(ta);
-      }
-    });
+  // copy buttons, including the ones the function tree adds later
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".copy") : null;
+    if (!b) return;
+    var text = b.parentNode.querySelector("pre").innerText;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
   });
 
   // one square per check: 34 checks, the passed ones filled
@@ -475,5 +649,9 @@ cp -r dartr-code/skills/dartr-code ~/.agents/skills/</code></pre>
   });
 })();
 </script>
+<!-- the function tree: D3 draws it; without D3 the same content is shown as a list -->
+<script defer src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script defer src="functions.js"></script>
+<script defer src="function-tree.js"></script>
 </body>
 </html>
