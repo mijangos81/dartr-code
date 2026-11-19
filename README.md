@@ -12,7 +12,7 @@ A skill is a folder of instructions and reference files that the assistant
 loads when a task calls for it. This one targets the two ways dartR code goes
 wrong when an assistant writes it from memory:
 
-- **Wrong names.** The suite exports 263 functions, and argument names changed
+- **Wrong names.** The suite exports 268 functions, and argument names changed
   when the old `dartR` package was split into the dartRverse. Assistants
   therefore invent arguments, or call functions that no longer exist.
 - **Code that runs and returns a wrong result.** For example, `gl.read.dart()`
@@ -74,12 +74,19 @@ falls back on the static files.
 
 ## Versions
 
-The static reference was generated on 11 November 2026 from the `dev`
-branches: dartRverse 1.2.7, and dartR.base and the other dartR.* packages
-1.2.6. CRAN holds dartR.base 1.2.3, in which 18 functions have fewer arguments,
-so a call taken from the static files can fail with `unused argument` on a
-CRAN installation. The lookup script does not have this problem, because it
-reads the version you have installed.
+The static reference was generated on 19 November 2026 from dartRverse 1.3.0
+and dartR.* 1.3.0, the `beta` branches, which hold the release submitted to
+CRAN. On that date CRAN held 1.3.0 of dartR.base and dartR.popgen only; the
+other four analysis packages there were 1.2.2, and dartRverse 1.0.6. A call
+taken from the static files can therefore fail with `unused argument` on an
+older installation (19 functions in dartR.base 1.2.3 have fewer arguments).
+The lookup script does not have this problem, because it reads the version you
+have installed. `traps.md`, section 9, lists the results that change between
+the old CRAN releases and 1.3.0.
+
+To build from a release other than the one installed in your own library,
+install it into a separate library and put that first, for example
+`R_LIBS=/path/to/lib Rscript ...`.
 
 To regenerate the function files and `index.md` after a package update:
 
@@ -104,7 +111,7 @@ left out of the tree, so they have no row.
 
 ## Status
 
-Version 0.5.0, an early release. It has had one test, on version 0.3.0 with
+Version 0.6.0, an early release. It has had one test, on version 0.3.0 with
 Claude: six tasks, one run each, given to an assistant that could not run R,
 whose scripts were then run and checked. Scripts written with the skill passed
 31 of 34 checks; scripts written without it passed 13 of 34. One run per task is

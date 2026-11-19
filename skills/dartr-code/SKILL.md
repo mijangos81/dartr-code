@@ -2,14 +2,14 @@
 name: dartr-code
 description: Write, fix or review dartR/dartRverse R code for SNP data (gl.* functions, genlight objects, DArT, DArTseq or SilicoDArT reports). Covers the dartRverse population-genetics packages (dartR.base, dartR.popgen, dartR.spatial, dartR.captive, dartR.sexlinked, dartR.sim) and the retired dartR package. Use whenever a request or a script mentions library(dartRverse), library(dartR), a gl.* function such as gl.read.dart, gl.filter.callrate, gl.report.heterozygosity, gl.pcoa or gl.fst.pop, or a genlight object, and whenever the user wants to filter SNPs, run a PCA or PCoA, or estimate FST, heterozygosity, relatedness, population structure or Ne from SNP data in R, even if no package is named. Supplies the exact signature of every function and the known traps that make dartR code run without error and return a wrong result.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # Writing dartRverse code
 
 Two things go wrong when dartRverse code is written from memory.
 
-- **Names are misremembered.** The suite exports 263 functions. Argument names changed when the old `dartR` package was split into the dartRverse, and they are still not uniform: most functions take `plot.display`, but `gl.pcoa` takes `plot.out`. A wrong name stops the user's script, and they often cannot tell why.
+- **Names are misremembered.** The suite exports 268 functions. Argument names changed when the old `dartR` package was split into the dartRverse, and they are still not uniform: most functions take `plot.display`, but `gl.pcoa` takes `plot.out`. A wrong name stops the user's script, and they often cannot tell why.
 - **Some calls run and are wrong.** Nothing errors and the numbers look plausible, so the mistake travels into a thesis or a management decision. These are the traps listed below.
 
 So look up every function you call, and read the traps for the kind of work you are doing. Do what was asked: a one-line fix does not need an analysis pipeline built around it, and the user's own instructions take precedence over the defaults in this skill.
@@ -51,7 +51,7 @@ Three rules follow from this.
 
 1. Do not invent a function or an argument. One that the lookup does not find may be missing because its package is not installed or because the user's release differs, so check the package and the version first. If it still is not there, say so and offer the nearest real one. An invented argument fails with `unused argument`, and an invented function sends the user searching for something that was never there.
 2. Code recalled from memory or copied from an old script is probably written for the old `dartR`. Check it against `migration-from-dartR.md`.
-3. Each reference file states the package versions it was built from. They are the `dev` branches (dartR.* 1.2.6), which are ahead of CRAN, so do not present the static files as the CRAN release. A user on other versions may see different arguments: ask them to run `packageVersion("dartR.base")` when it matters, and trust `args(fn)` in their session over the static file. The CRAN releases also contain faults that the `dev` branches have corrected, some of which give a wrong number without an error; they are listed in `traps.md`, section 9.
+3. Each reference file states the package versions it was built from: dartR.* 1.3.0, the release submitted to CRAN. On 19 November 2026 CRAN held 1.3.0 of dartR.base and dartR.popgen only, the other four packages there were still 1.2.2, and `dev` was ahead for dartR.base (1.3.1). So do not assume a user has 1.3.0: ask them to run `packageVersion("dartR.base")` when it matters, and trust `args(fn)` in their session over the static file. A user moving from the old CRAN releases to 1.3.0 gets different numbers from many functions, mostly because the old ones were wrong; `traps.md`, section 9, lists them.
 
 ## Setup
 
@@ -67,7 +67,7 @@ dartRverse_install()                                # installed versions beside 
 dartRverse_install("dartR.popgen", rep = "CRAN")    # add another package, one per call
 ```
 
-These lines avoid the parts of `dartRverse_install()` that changed between releases: what `"all"` does, and what happens to a `branch` given without `rep = "Github"`, depend on the dartRverse version, and installing from CRAN replaces a newer GitHub version with the older release. Read `traps.md`, section 9, before writing any other install or update command.
+These lines avoid the parts of `dartRverse_install()` that changed between releases: what `"all"` does, and what happens to a `branch` given without `rep = "Github"`, depend on the dartRverse version, and installing from CRAN replaces a newer GitHub version with the older release. On an R version that CRAN no longer builds binaries for, `install.packages()` can also install a dartR package years out of date, so check `packageVersion()` afterwards. Read `traps.md`, section 9, before writing any other install or update command.
 
 Never write `library(dartR)` or `install.packages("dartR")`: that package is retired.
 
@@ -77,11 +77,11 @@ For a runnable example when the user gives no data, use the bundled objects `pla
 
 Most `gl.*` functions work on a genlight object (class `dartR`): individuals in rows, loci in columns. The readers take files, and a few functions take a matrix or a distance object, so check the signature.
 
-- **Genotypes.** SNP data: `0` homozygous reference, `1` heterozygous, `2` homozygous alternate, `NA` missing. SilicoDArT data: `1` present, `0` absent. `as.matrix(x)` gives the matrix. Sixty-eight functions stop when given a SilicoDArT object; the reference marks each one with a **Data: SNP only** line.
+- **Genotypes.** SNP data: `0` homozygous reference, `1` heterozygous, `2` homozygous alternate, `NA` missing. SilicoDArT data: `1` present, `0` absent. `as.matrix(x)` gives the matrix. Sixty-nine functions stop when given a SilicoDArT object; the reference marks each one with a **Data: SNP only** line.
 - **Accessors.** `nInd(x)`, `nLoc(x)`, `nPop(x)`, `indNames(x)`, `locNames(x)`, `pop(x)`, `popNames(x)`.
 - **Metadata.** `x@other$ind.metrics` (one row per individual, in the object's order), `x@other$loc.metrics` (one row per locus), `x@other$latlon` (columns `lat`, `lon`), `x@other$history` (the calls that built the object).
 - **Subsetting.** `x[i, j]` and the `gl.keep.*` / `gl.drop.*` functions keep those tables in step with the genotypes. They do not recalculate the locus statistics; see trap 6.
-- **File-backed objects.** With `fbm = TRUE` a reader keeps the genotypes in a file in R's temporary folder (`x@fbm`) and not in memory. Use it only for data too large for memory, and save such an object with `gl.save()`: `saveRDS()` stores a pointer to a file that is gone in the next session. Read `references/traps.md`, section 10, before writing code for one.
+- **File-backed objects.** With `fbm = TRUE` a reader keeps the genotypes in a file (`x@fbm`), by default in R's temporary folder, and not in memory. Use it only for data too large for memory, and save such an object with `gl.save()`: `saveRDS()` stores a pointer to a file that is gone in the next session. Read `references/traps.md`, section 10, before writing code for one.
 
 Attach anything to individuals **by name, never by position**: `pop(x) <- sheet$pop[match(indNames(x), sheet$id)]`. Before that line, check that the IDs in the sheet are unique and that every `indNames(x)` is among them; after it, check the result for `NA`. Sample sheets are rarely in the object's order.
 
@@ -96,7 +96,7 @@ Attach anything to individuals **by name, never by position**: `pop(x) <- sheet$
 
 ## Traps: code that runs and is wrong
 
-Each was reproduced on dartR.base 1.2.6 with the bundled data when this skill was written. That is the skill's evidence, not a test run in your session, so do not report it as one of yours. `references/traps.md` has more, grouped by topic, including relatedness and kinship scales, LD, sex-linked loci, contamination and batch effects, file-backed objects, results that differ on the CRAN release, and how to download and call the external programs (STRUCTURE, NeEstimator, COLONY and others) with `gl.download.binary()`. Read the relevant section before writing that kind of analysis.
+Each was reproduced on dartR.* 1.3.0 with the bundled data when this skill was updated. That is the skill's evidence, not a test run in your session, so do not report it as one of yours. `references/traps.md` has more, grouped by topic, including relatedness and kinship scales, LD, sex-linked loci, contamination and batch effects, file-backed objects, results that differ on the CRAN release, and how to download and call the external programs (STRUCTURE, NeEstimator, COLONY and others) with `gl.download.binary()`. Read the relevant section before writing that kind of analysis.
 
 1. **`verbose = 0` also turns off plots**, even with `plot.display = TRUE`, and so does `gl.set.verbosity(0)`. Use `verbose = 1` when the user needs the figure.
 2. **Report functions do not return the same kind of object.** `gl.report.callrate` returns the genlight; `gl.report.heterozygosity` returns a data frame; `gl.report.fstat` returns a list. Writing `x <- gl.report.heterozygosity(x)` replaces the data with a table. Read **Returns** in the reference.
@@ -107,7 +107,7 @@ Each was reproduced on dartR.base 1.2.6 with the bundled data when this skill wa
 7. **`gl.impute()` imputes within each population as set in `pop(x)`.** Imputing with `pop` set to the grouping you then plot makes those groups look more distinct than the data support. Impute on a neutral grouping. Loci missing in every individual stay `NA`, so run `gl.filter.allna()` first. On dartR.base 1.2.3 and earlier this function also mislabels individuals; see `traps.md`.
 8. **`gl.filter.maf(threshold = 3)` is a minor allele count, not a frequency.** A value above 1 is converted to `threshold / (nInd * ploidy)`. Say which one you used.
 9. **There are two FSTs.** `gl.fst.pop()` gives Weir and Cockerham's (1984) theta; `gl.report.fstat()` gives Nei's (1987) Fst and Fstp, Jost's D and Hedrick's Gst. They differ on unevenly sampled data, so name the estimator. `gl.fst.pop()` returns a lower-triangle matrix, and a list instead when `nboots > 1`.
-10. **`x@position` is the SNP's position inside its sequence tag and `x@chromosome` is empty after `gl.read.dart()`.** Genome coordinates sit in `loc.metrics` columns named after the reference genome. Functions that use map positions need them copied across first:
+10. **`x@position` and `x@chromosome` are empty after `gl.read.dart()`.** On 1.3.0 the slots hold genome coordinates only; the SNP's position inside its sequence tag is `loc.metrics$SnpPosition`. (On 1.2.x `@position` held that tag position, and the bundled `platypus.gl` still does.) Genome coordinates sit in `loc.metrics` columns named after the reference genome. Functions that use map positions need them copied across first:
     ```r
     chr <- "Chrom_Platypus_Chrom_NCBIv1"      # the names in platypus.gl: use the two
     pos <- "ChromPos_Platypus_Chrom_NCBIv1"   # Chrom_* columns of your own loc.metrics
