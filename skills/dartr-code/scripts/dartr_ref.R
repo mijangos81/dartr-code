@@ -193,7 +193,7 @@ FILE_BLURB <- c(
   "popgen-other.md"      = "dartR.popgen: assignment, outlier loci, AMOVA, marker-panel selection, BLAST and gene annotation.",
   "spatial.md"   = "dartR.spatial: isolation by distance, least-cost paths, spatial autocorrelation, EEMS.",
   "captive.md"   = "dartR.captive: relatedness, kinship, inbreeding, parentage (COLONY and EMIBD9 are external programs).",
-  "captive-report.md" = "dartR.captive: reports for managing a captive or small population (kinship classes, mate suitability, adding and removing individuals).",
+  "captive-report.md" = "dartR.captive: report functions (parent-offspring pairs, genotyping error rate from replicated samples).",
   "sexlinked.md" = "dartR.sexlinked: identify, filter and use sex-linked loci.",
   "sim.md"       = "dartR.sim: simulate genlight objects and population dynamics.")
 

@@ -1,3 +1,47 @@
+# dartr-code 0.6.0 (19 November 2026)
+
+The reference now describes dartRverse 1.3.0, the release submitted to CRAN,
+instead of the 1.2.6 development branches. dartR.base 1.3.0 and dartR.popgen
+1.3.0 reached CRAN on 18 November 2026; the other four packages there are
+still 1.2.2.
+
+- **Function reference.** Rebuilt from the `beta` branches (dartR.* 1.3.0,
+  dartRverse 1.3.0) installed in a separate library: 268 functions. New:
+  `gl.fbm.cleanup`, `gl.test.offspring`, `gl.report.errorrate`,
+  `download_binary` and 15 `utils.fbm.*` helpers. `gl.He`, `gl.Ho` and
+  `gl.propShared` are back in dartR.base. No longer exported: `gl.kin`,
+  `gl.select.pairs`, eleven captive-management reports and `gl.sim.apply`,
+  which were on `dev` when 0.5.0 was built. `migration-from-dartR.md` was
+  regenerated.
+- **`traps.md`, re-tested.** Every item tagged as tested on 1.2.6 was run
+  again on 1.3.0. Most held. These changed:
+  - `gl.read.dart()` now leaves `@position` and `@chromosome` empty; the
+    bundled `platypus.gl` still carries the old tag positions (section 6, and
+    trap 10 in `SKILL.md`).
+  - `gl.pcoa()` gives the same result file-backed and in memory.
+  - `gl.impute(method = "frequency")` is deterministic apart from the
+    residual fill, which still needs a seed.
+  - Report functions still print their tables at `verbose = 1`.
+  - `gl.read.csv()` keeps its genotypes at the default verbosity.
+- **`traps.md`, new items.** `gl2plink()` writes round positions as `1e+05`
+  (workaround tested). `gl.report.nall()` is not reproducible under
+  `set.seed()`. The readers count different alleles. `gl.filter.hamming()`
+  takes a count. `gl.relatedness()` needs the `dartR_coancestry` program. On
+  a mixed CRAN install, dartR.captive 1.2.2 masks the reviewed `gl.assign.*`
+  of dartR.popgen 1.3.0. On R 4.4, `install.packages()` installed binaries
+  years out of date.
+- **`traps.md`, section 9, rewritten.** It has the version table for
+  19 November 2026, install commands for the complete 1.3.0 from `beta`, and
+  a list of the results that change when a user moves from CRAN 1.2.2/1.2.3
+  to 1.3.0. That list was taken from the packages' change logs and checked
+  against them, not run.
+- **Section 10 (file-backed objects).** Rewritten for 1.3.0: the backing
+  folder `getOption("FBM.dir")`, automatic deletion, `gl.fbm.cleanup()`, the
+  limit on decoding the whole matrix, and readers that write straight to
+  disk.
+- **Website.** The function tree has 231 functions in 18 groups: the
+  captive-management group is gone with its functions.
+
 # dartr-code 0.5.0 (11 November 2026)
 
 The one skill folder now serves Claude, Codex and the ChatGPT desktop app.

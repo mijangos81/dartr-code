@@ -48,7 +48,7 @@
     cap.textContent = names.length + " functions in " + groups.length + " groups. " + nAlso +
       " of them do two jobs and sit in two groups; the tree draws those with a dashed outline. " +
       (D.left_out ? "The " + D.left_out + " internal helpers (utils.*) are not shown. " : "") + "Read on " + D.reference_date +
-      " from the development branches: " + D.versions + ".";
+      " from " + D.versions + ".";
   }
 
   // ---- one function, written out: used by the panel and by the list ----
